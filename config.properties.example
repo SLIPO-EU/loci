@@ -1,0 +1,40 @@
+# input/output
+input_file=pois.csv
+
+cl-output_file=clusters.csv
+hs-output_file=hotspots.csv
+ca-output_file=ca.csv
+
+# delimiters
+csv_delimiter=;
+keyword_delimiter=,
+
+# keyword filters (comma-separated)
+keywords=food,shop
+
+# attribute columns (starting from 1)
+column_id=1
+column_name=2
+column_lon=3
+column_lat=4
+column_keywords=5
+
+# DBSCAN parameters
+cl-eps=0.001
+cl-minPts=10
+cl-print_clusters_convex_hull=true
+
+# Hotspots parameters
+hs-eps=0.001
+hs-neighbor_weight=1
+hs-topk=10
+hs-score_threshold=1
+
+# Catchment areas parameters
+ca-eps=0.001
+ca-topk=10
+ca-distinct=true
+ca-decay-constant=0.5
+ca-div=false
+ca-exhaustive=false
+ca-print-results=true
