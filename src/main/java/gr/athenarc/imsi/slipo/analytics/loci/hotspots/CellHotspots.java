@@ -68,7 +68,8 @@ public class CellHotspots extends HotspotFinder<POI> {
 				neighborScores = new ArrayList<Double>();
 				for (int i = row - 1; i <= row + 1; i++) {
 					for (int j = column - 1; j <= column + 1; j++) {
-						if (cellScores.get(i) != null && cellScores.get(i).get(j) != null) {
+						if (!(i == row && j == column) && cellScores.get(i) != null
+								&& cellScores.get(i).get(j) != null) {
 							neighborScores.add(cellScores.get(i).get(j));
 						}
 					}
