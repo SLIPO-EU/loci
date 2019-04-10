@@ -1,0 +1,509 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>loci package &mdash; loci 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> loci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">loci package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-loci.analytics">loci.analytics module</a></li>
+<li><a class="reference internal" href="#module-loci.clustering">loci.clustering module</a></li>
+<li><a class="reference internal" href="#module-loci.index">loci.index module</a></li>
+<li><a class="reference internal" href="#module-loci.io">loci.io module</a></li>
+<li><a class="reference internal" href="#module-loci.plots">loci.plots module</a></li>
+<li><a class="reference internal" href="#module-loci">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">loci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>loci package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/loci.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="loci-package">
+<h1>loci package<a class="headerlink" href="#loci-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-loci.analytics">
+<span id="loci-analytics-module"></span><h2>loci.analytics module<a class="headerlink" href="#module-loci.analytics" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="loci.analytics.bbox">
+<code class="descclassname">loci.analytics.</code><code class="descname">bbox</code><span class="sig-paren">(</span><em>gdf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/analytics.html#bbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.analytics.bbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the bounding box of a GeoDataFrame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>gdf</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A Polygon representing the bounding box enclosing all geometries in the GeoDataFrame.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.analytics.filter_by_kwd">
+<code class="descclassname">loci.analytics.</code><code class="descname">filter_by_kwd</code><span class="sig-paren">(</span><em>gdf</em>, <em>kwd_filter</em>, <em>col_kwds='kwds'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/analytics.html#filter_by_kwd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.analytics.filter_by_kwd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a GeoDataFrame with only those rows that contain the specified keyword.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gdf</strong> (<em>GeoDataFrame</em>) – The initial GeoDataFrame to be filtered.</li>
+<li><strong>kwd_filter</strong> (<em>string</em>) – The keyword to use for filtering.</li>
+<li><strong>col_kwds</strong> (<em>string</em>) – Name of the column containing the keywords (default: <cite>kwds</cite>).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame with only those rows that contain <cite>kwd_filter</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.analytics.kwds_freq">
+<code class="descclassname">loci.analytics.</code><code class="descname">kwds_freq</code><span class="sig-paren">(</span><em>gdf</em>, <em>col_kwds='kwds'</em>, <em>normalized=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/analytics.html#kwds_freq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.analytics.kwds_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the frequency of keywords in the provided GeoDataFrame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gdf</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame with a keywords column.</li>
+<li><strong>col_kwds</strong> (<em>string</em>) – The column containing the list of keywords (default: <cite>kwds</cite>).</li>
+<li><strong>normalized</strong> (<em>bool</em>) – If True, the returned frequencies are normalized in [0,1]
+by dividing with the number of rows in <cite>gdf</cite> (default: False).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A dictionary containing for each keyword the number of rows it appears in.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-loci.clustering">
+<span id="loci-clustering-module"></span><h2>loci.clustering module<a class="headerlink" href="#module-loci.clustering" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="loci.clustering.dbscan">
+<code class="descclassname">loci.clustering.</code><code class="descname">dbscan</code><span class="sig-paren">(</span><em>pois</em>, <em>eps</em>, <em>minpts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/clustering.html#dbscan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.clustering.dbscan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes clusters using the DBSCAN algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pois</strong> (<em>GeoDataFrame</em>) – A POI GeoDataFrame.</li>
+<li><strong>eps</strong> (<em>float</em>) – The neighborhood radius.</li>
+<li><strong>minpts</strong> (<em>integer</em>) – The minimum number of points in the neighborhood to be considered as dense.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame containing the clustered POIs and their labels (not including noise points).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.clustering.hdbscan">
+<code class="descclassname">loci.clustering.</code><code class="descname">hdbscan</code><span class="sig-paren">(</span><em>pois</em>, <em>minpts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/clustering.html#hdbscan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.clustering.hdbscan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes clusters using the HDBSCAN algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pois</strong> (<em>GeoDataFrame</em>) – A POI GeoDataFrame.</li>
+<li><strong>minpts</strong> (<em>integer</em>) – The minimum number of points in the neighborhood to be considered as dense.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame containing the clustered POIs and their labels (not including noise points).</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-loci.index">
+<span id="loci-index-module"></span><h2>loci.index module<a class="headerlink" href="#module-loci.index" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="loci.index.grid">
+<code class="descclassname">loci.index.</code><code class="descname">grid</code><span class="sig-paren">(</span><em>pois</em>, <em>cell_width=None</em>, <em>cell_height=None</em>, <em>cell_size_ratio=0.01</em>, <em>znorm=False</em>, <em>neighborhood=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/index.html#grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.index.grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a uniform grid from the given POIs.</p>
+<p>If <cite>cell_width</cite> and <cite>cell_height</cite> are provided, each grid cell has size <cite>cell_width * cell_height</cite>.
+Otherwise, <cite>cell_width = cell_size_ratio * area_width</cite> and <cite>cell_height = cell_size_ratio * area_height</cite>,
+where <cite>area</cite> refers to the bounding box of <cite>pois</cite>.</p>
+<p>Each cell is assigned a <cite>score</cite>, which is the number of points within that cell.</p>
+<p>If <cite>neighborhood</cite> is <cite>True</cite>, each cell is assigned an additional score (<cite>score_nb</cite>), which is the total number of
+points within that cell and its adjacent cells.</p>
+<p>If <cite>znorm</cite> is True, the above scores are also provided in their z-normalized variants, <cite>score_znorm</cite> and
+<cite>score_nb_znorm</cite>.</p>
+<p>The constructed grid is represented by a GeoDataFrame where each row corresponds to a grid cell
+and contains the following columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>cell_id</cite>: The id of the cell (integer computed as: <cite>cell_x * num_columns + cell_y</cite>)</li>
+<li><cite>cell_x</cite>: The row of the cell in the grid (integer).</li>
+<li><cite>cell_y</cite>: The column of the cell in the grid (integer).</li>
+<li><cite>score</cite>: see above</li>
+<li><cite>score_nb</cite>: see above</li>
+<li><cite>score_znorm</cite>: see above</li>
+<li><cite>score_nb_znorm</cite>: see above</li>
+<li>‘contents’: list of points in the cell.</li>
+<li>‘geometry’: Geometry column of the GeoDataFrame that contains the polygon representing the cell boundaries.</li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pois</strong> (<em>GeoDataFrame</em>) – a POIs GeoDataFrame.</li>
+<li><strong>cell_width</strong> (<em>float</em>) – cell width.</li>
+<li><strong>cell_height</strong> (<em>float</em>) – cell height.</li>
+<li><strong>cell_size_ratio</strong> (<em>float</em>) – ratio of cell width and height to area width and height (default: 0.01).</li>
+<li><strong>znorm</strong> (<em>bool</em>) – Whether to include z-normalized scores (default: False).</li>
+<li><strong>neighborhood</strong> (<em>bool</em>) – Whether to include a total score including adjacent cells (default: False).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame as described above.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-loci.io">
+<span id="loci-io-module"></span><h2>loci.io module<a class="headerlink" href="#module-loci.io" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="loci.io.read_poi_csv">
+<code class="descclassname">loci.io.</code><code class="descname">read_poi_csv</code><span class="sig-paren">(</span><em>input_file</em>, <em>col_id='id'</em>, <em>col_name='name'</em>, <em>col_lon='lon'</em>, <em>col_lat='lat'</em>, <em>col_kwds='kwds'</em>, <em>col_sep=';'</em>, <em>kwds_sep='</em>, <em>'</em>, <em>source_crs='EPSG:4326'</em>, <em>target_crs='EPSG:4326'</em>, <em>keep_other_cols=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/io.html#read_poi_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.io.read_poi_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a POI GeoDataFrame from an input CSV file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>input_file</strong> (<em>string</em>) – Path to the input csv file.</li>
+<li><strong>col_id</strong> (<em>string</em>) – Name of the column containing the POI id (default: <cite>id</cite>).</li>
+<li><strong>col_name</strong> (<em>string</em>) – Name of the column containing the POI name (default: <cite>name</cite>).</li>
+<li><strong>col_lon</strong> (<em>string</em>) – Name of the column containing the POI longitude (default: <cite>lon</cite>).</li>
+<li><strong>col_lat</strong> (<em>string</em>) – Name of the column containing the POI latitude (default: <cite>lat</cite>).</li>
+<li><strong>col_kwds</strong> (<em>string</em>) – Name of the column containing the POI keywords (default: <cite>kwds</cite>).</li>
+<li><strong>col_sep</strong> (<em>string</em>) – Column delimiter (default: <cite>;</cite>).</li>
+<li><strong>kwds_sep</strong> (<em>string</em>) – Keywords delimiter (default: <cite>,</cite>).</li>
+<li><strong>source_crs</strong> (<em>string</em>) – Coordinate Reference System of input data (default: <cite>EPSG:4326</cite>).</li>
+<li><strong>target_crs</strong> (<em>string</em>) – Coordinate Reference System of the GeoDataFrame to be created (default: <cite>EPSG:4326</cite>).</li>
+<li><strong>keep_other_cols</strong> (<em>bool</em>) – Whether to keep the rest of the columns in the csv file (default: <cite>False</cite>).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A POI GeoDataFrame with columns <cite>id</cite>, <cite>name</cite> and <cite>kwds</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-loci.plots">
+<span id="loci-plots-module"></span><h2>loci.plots module<a class="headerlink" href="#module-loci.plots" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="loci.plots.barchart">
+<code class="descclassname">loci.plots.</code><code class="descname">barchart</code><span class="sig-paren">(</span><em>data</em>, <em>orientation='Vertical'</em>, <em>x_axis_label=''</em>, <em>y_axis_label=''</em>, <em>plot_title=''</em>, <em>bar_width=0.5</em>, <em>plot_width=15</em>, <em>plot_height=5</em>, <em>top_k=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#barchart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.barchart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a bar chart with the given data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>dict</em>) – The data to plot.</li>
+<li><strong>orientation</strong> (<em>string</em>) – The orientation of the bars in the plot (<cite>Vertical</cite> or <cite>Horizontal</cite>; default: <cite>Vertical</cite>).</li>
+<li><strong>x_axis_label</strong> (<em>string</em>) – Label of x axis.</li>
+<li><strong>y_axis_label</strong> (<em>string</em>) – Label of y axis.</li>
+<li><strong>plot_title</strong> (<em>string</em>) – Title of the plot.</li>
+<li><strong>bar_width</strong> (<em>scalar</em>) – The width of the bars (default: 0.5).</li>
+<li><strong>plot_width</strong> (<em>scalar</em>) – The width of the plot (default: 15).</li>
+<li><strong>plot_height</strong> (<em>scalar</em>) – The height of the plot (default: 5).</li>
+<li><strong>top_k</strong> (<em>integer</em>) – Top k results (if -1, show all; default: 10).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Matplotlib plot displaying the bar chart.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.heatmap">
+<code class="descclassname">loci.plots.</code><code class="descname">heatmap</code><span class="sig-paren">(</span><em>pois</em>, <em>width='100%'</em>, <em>height='100%'</em>, <em>radius=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.heatmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a heatmap of the input POIs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pois</strong> (<em>GeoDataFrame</em>) – A POIs GeoDataFrame.</li>
+<li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
+<li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
+<li><strong>radius</strong> (<em>float</em>) – Radius of each point of the heatmap (default: 10).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the heatmap generated from the POIs.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.map_grid">
+<code class="descclassname">loci.plots.</code><code class="descname">map_grid</code><span class="sig-paren">(</span><em>g</em>, <em>score_column='score'</em>, <em>percentiles=(0.5</em>, <em>0.8</em>, <em>0.9</em>, <em>0.95</em>, <em>0.98</em>, <em>0.99)</em>, <em>width='100%'</em>, <em>height='100%'</em>, <em>colormap='YlOrRd'</em>, <em>opacity=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a grid as a choropleth map.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>g</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame representing the grid index.</li>
+<li><strong>score_column</strong> (<em>string</em>) – Name of the column containing the score to use for the choropleth map (default: score).</li>
+<li><strong>percentiles</strong> (<em>array</em>) – The percentiles to use for the scale of the choropleth map.</li>
+<li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
+<li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
+<li><strong>colormap</strong> (<em>string</em>) – A string indicating a Matplotlib colormap (default: YlOrRd).</li>
+<li><strong>opacity</strong> (<em>float</em>) – Opacity (default: 0.7).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the grid as a choropleth map.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.map_pois">
+<code class="descclassname">loci.plots.</code><code class="descname">map_pois</code><span class="sig-paren">(</span><em>pois</em>, <em>tiles='OpenStreetMap'</em>, <em>width='100%'</em>, <em>height='100%'</em>, <em>show_bbox=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_pois"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_pois" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Folium Map showing the contents of the provided POIs GeoDataFrame.
+Map center and zoom level are set automatically.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pois</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame containing the POIs to be displayed.</li>
+<li><strong>tiles</strong> (<em>string</em>) – The tiles to use for the map (default: <cite>OpenStreetMap</cite>).</li>
+<li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
+<li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
+<li><strong>show_bbox</strong> (<em>bool</em>) – Whether to show the bounding box of the GeoDataFrame (default: False).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the given POIs.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-loci">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-loci" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Panagiotis Kalampokis, Dimitris Skoutas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

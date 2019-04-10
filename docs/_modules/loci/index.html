@@ -1,0 +1,308 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>loci.index &mdash; loci 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> loci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">loci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>loci.index</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for loci.index</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">box</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">zscore</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+
+
+<div class="viewcode-block" id="grid"><a class="viewcode-back" href="../../loci.html#loci.index.grid">[docs]</a><span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">cell_width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cell_height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cell_size_ratio</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">znorm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">neighborhood</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Constructs a uniform grid from the given POIs.</span>
+
+<span class="sd">    If `cell_width` and `cell_height` are provided, each grid cell has size `cell_width * cell_height`.</span>
+<span class="sd">    Otherwise, `cell_width = cell_size_ratio * area_width` and `cell_height = cell_size_ratio * area_height`,</span>
+<span class="sd">    where `area` refers to the bounding box of `pois`.</span>
+
+<span class="sd">    Each cell is assigned a `score`, which is the number of points within that cell.</span>
+
+<span class="sd">    If `neighborhood` is `True`, each cell is assigned an additional score (`score_nb`), which is the total number of</span>
+<span class="sd">    points within that cell and its adjacent cells.</span>
+
+<span class="sd">    If `znorm` is True, the above scores are also provided in their z-normalized variants, `score_znorm` and</span>
+<span class="sd">    `score_nb_znorm`.</span>
+
+<span class="sd">    The constructed grid is represented by a GeoDataFrame where each row corresponds to a grid cell</span>
+<span class="sd">    and contains the following columns:</span>
+<span class="sd">        - `cell_id`: The id of the cell (integer computed as: `cell_x * num_columns + cell_y`)</span>
+<span class="sd">        - `cell_x`: The row of the cell in the grid (integer).</span>
+<span class="sd">        - `cell_y`: The column of the cell in the grid (integer).</span>
+<span class="sd">        - `score`: see above</span>
+<span class="sd">        - `score_nb`: see above</span>
+<span class="sd">        - `score_znorm`: see above</span>
+<span class="sd">        - `score_nb_znorm`: see above</span>
+<span class="sd">        - &#39;contents&#39;: list of points in the cell.</span>
+<span class="sd">        - &#39;geometry&#39;: Geometry column of the GeoDataFrame that contains the polygon representing the cell boundaries.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pois (GeoDataFrame): a POIs GeoDataFrame.</span>
+<span class="sd">        cell_width (float): cell width.</span>
+<span class="sd">        cell_height (float): cell height.</span>
+<span class="sd">        cell_size_ratio (float): ratio of cell width and height to area width and height (default: 0.01).</span>
+<span class="sd">        znorm (bool): Whether to include z-normalized scores (default: False).</span>
+<span class="sd">        neighborhood (bool): Whether to include a total score including adjacent cells (default: False).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A GeoDataFrame as described above.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">orig_crs</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">crs</span>
+    <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">total_bounds</span>
+
+    <span class="k">if</span> <span class="n">cell_width</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cell_width</span> <span class="o">=</span> <span class="n">cell_size_ratio</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cell_height</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cell_height</span> <span class="o">=</span> <span class="n">cell_size_ratio</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span>
+
+    <span class="n">num_of_columns</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_width</span><span class="p">)</span>
+    <span class="n">num_of_rows</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_height</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">grid_cell</span><span class="p">(</span><span class="n">poi</span><span class="p">):</span>
+        <span class="n">cell_x</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">poi</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_width</span><span class="p">)</span>
+        <span class="n">cell_y</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">poi</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_height</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">cell_x</span> <span class="o">*</span> <span class="n">num_of_columns</span> <span class="o">+</span> <span class="n">cell_y</span><span class="p">)</span>
+
+    <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;cell_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">grid_cell</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+
+    <span class="n">pois</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;cell_id&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">list</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">cell_x</span><span class="p">,</span> <span class="n">cell_y</span><span class="p">)</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">num_of_columns</span><span class="p">)</span>
+
+        <span class="n">cell_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cell_x</span> <span class="o">*</span> <span class="n">num_of_columns</span> <span class="o">+</span> <span class="n">cell_y</span><span class="p">)</span>
+        <span class="n">cell_score</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">])</span>
+        <span class="n">geometry</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="n">minx</span> <span class="o">+</span> <span class="n">cell_x</span> <span class="o">*</span> <span class="n">cell_width</span><span class="p">,</span> <span class="n">miny</span> <span class="o">+</span> <span class="n">cell_y</span> <span class="o">*</span> <span class="n">cell_height</span><span class="p">,</span> <span class="n">minx</span> <span class="o">+</span> <span class="p">(</span><span class="n">cell_x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell_width</span><span class="p">,</span> <span class="n">miny</span>
+                       <span class="o">+</span> <span class="p">(</span><span class="n">cell_y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell_height</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cell_id</span><span class="p">,</span> <span class="n">cell_x</span><span class="p">,</span> <span class="n">cell_y</span><span class="p">,</span> <span class="n">cell_score</span><span class="p">,</span> <span class="n">geometry</span>
+
+    <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;cell_id&#39;</span><span class="p">],</span> <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;cell_x&#39;</span><span class="p">],</span> <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;cell_y&#39;</span><span class="p">],</span> <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">],</span> <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">pois</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">pois</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;list&#39;</span><span class="p">:</span> <span class="s1">&#39;contents&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">znorm</span><span class="p">:</span>
+        <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;score_znorm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">neighborhood</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># Build dict. {(x, y): score}</span>
+        <span class="n">cell_id_score_dict</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;cell_x&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_y&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span>
+
+        <span class="n">cell_id_nbsum_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">cell_id_score_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">nb_sum</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="n">nb_sum</span> <span class="o">+=</span> <span class="n">cell_id_score_dict</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span> <span class="ow">or</span> <span class="mi">0</span>
+
+            <span class="n">cell_id_nbsum_dict</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">num_of_columns</span> <span class="o">+</span> <span class="n">y</span><span class="p">)]</span> <span class="o">=</span> <span class="n">nb_sum</span>
+
+        <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;score_nb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cell_id_nbsum_dict</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">cell_id_score_dict</span>
+
+        <span class="k">if</span> <span class="n">znorm</span><span class="p">:</span>
+            <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;score_nb_znorm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zscore</span><span class="p">(</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;score_nb&#39;</span><span class="p">])</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cell_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_x&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_y&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="s1">&#39;score_nb&#39;</span><span class="p">,</span> <span class="s1">&#39;score_znorm&#39;</span><span class="p">,</span> <span class="s1">&#39;score_nb_znorm&#39;</span><span class="p">,</span> <span class="s1">&#39;contents&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cell_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_x&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_y&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="s1">&#39;score_nb&#39;</span><span class="p">,</span> <span class="s1">&#39;contents&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">znorm</span><span class="p">:</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cell_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_x&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_y&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="s1">&#39;score_znorm&#39;</span><span class="p">,</span> <span class="s1">&#39;contents&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;cell_id&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_x&#39;</span><span class="p">,</span> <span class="s1">&#39;cell_y&#39;</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="s1">&#39;contents&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+
+    <span class="n">pois</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span>
+
+    <span class="n">gpois</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">orig_crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">pois</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">gpois</span><span class="p">,</span> <span class="n">num_of_columns</span><span class="p">,</span> <span class="n">num_of_rows</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Panagiotis Kalampokis, Dimitris Skoutas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

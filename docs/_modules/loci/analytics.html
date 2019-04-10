@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>loci.analytics &mdash; loci 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> loci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">loci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>loci.analytics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for loci.analytics</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">box</span>
+
+
+<div class="viewcode-block" id="filter_by_kwd"><a class="viewcode-back" href="../../loci.html#loci.analytics.filter_by_kwd">[docs]</a><span class="k">def</span> <span class="nf">filter_by_kwd</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">kwd_filter</span><span class="p">,</span> <span class="n">col_kwds</span><span class="o">=</span><span class="s1">&#39;kwds&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a GeoDataFrame with only those rows that contain the specified keyword.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gdf (GeoDataFrame): The initial GeoDataFrame to be filtered.</span>
+<span class="sd">        kwd_filter (string): The keyword to use for filtering.</span>
+<span class="sd">        col_kwds (string): Name of the column containing the keywords (default: `kwds`).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A GeoDataFrame with only those rows that contain `kwd_filter`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">col_kwds</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">kwd_filter</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">filtered_gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">filtered_gdf</span></div>
+
+
+<div class="viewcode-block" id="bbox"><a class="viewcode-back" href="../../loci.html#loci.analytics.bbox">[docs]</a><span class="k">def</span> <span class="nf">bbox</span><span class="p">(</span><span class="n">gdf</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the bounding box of a GeoDataFrame.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gdf (GeoDataFrame): A GeoDataFrame.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A Polygon representing the bounding box enclosing all geometries in the GeoDataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">total_bounds</span>
+    <span class="k">return</span> <span class="n">box</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="kwds_freq"><a class="viewcode-back" href="../../loci.html#loci.analytics.kwds_freq">[docs]</a><span class="k">def</span> <span class="nf">kwds_freq</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">col_kwds</span><span class="o">=</span><span class="s1">&#39;kwds&#39;</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes the frequency of keywords in the provided GeoDataFrame.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gdf (GeoDataFrame): A GeoDataFrame with a keywords column.</span>
+<span class="sd">        col_kwds (string) : The column containing the list of keywords (default: `kwds`).</span>
+<span class="sd">        normalized (bool): If True, the returned frequencies are normalized in [0,1]</span>
+<span class="sd">            by dividing with the number of rows in `gdf` (default: False).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dictionary containing for each keyword the number of rows it appears in.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">kwds_ser</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">col_kwds</span><span class="p">]</span>
+
+    <span class="n">kwds_freq_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">kwds</span><span class="p">)</span> <span class="ow">in</span> <span class="n">kwds_ser</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">kwd</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kwd</span> <span class="ow">in</span> <span class="n">kwds_freq_dict</span><span class="p">:</span>
+                <span class="n">kwds_freq_dict</span><span class="p">[</span><span class="n">kwd</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">kwds_freq_dict</span><span class="p">[</span><span class="n">kwd</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">num_of_records</span> <span class="o">=</span> <span class="n">kwds_ser</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
+        <span class="k">for</span><span class="p">(</span><span class="n">kwd</span><span class="p">,</span> <span class="n">freq</span><span class="p">)</span> <span class="ow">in</span> <span class="n">kwds_freq_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">kwds_freq_dict</span><span class="p">[</span><span class="n">kwd</span><span class="p">]</span> <span class="o">=</span> <span class="n">freq</span> <span class="o">/</span> <span class="n">num_of_records</span>
+
+    <span class="k">return</span> <span class="n">kwds_freq_dict</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Panagiotis Kalampokis, Dimitris Skoutas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

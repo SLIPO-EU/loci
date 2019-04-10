@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>loci.io &mdash; loci 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> loci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">loci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>loci.io</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for loci.io</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">Point</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+
+<div class="viewcode-block" id="read_poi_csv"><a class="viewcode-back" href="../../loci.html#loci.io.read_poi_csv">[docs]</a><span class="k">def</span> <span class="nf">read_poi_csv</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">col_id</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">col_name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">col_lon</span><span class="o">=</span><span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="n">col_lat</span><span class="o">=</span><span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="n">col_kwds</span><span class="o">=</span><span class="s1">&#39;kwds&#39;</span><span class="p">,</span> <span class="n">col_sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span>
+                 <span class="n">kwds_sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">source_crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span> <span class="n">target_crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span> <span class="n">keep_other_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Creates a POI GeoDataFrame from an input CSV file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_file (string): Path to the input csv file.</span>
+<span class="sd">        col_id (string): Name of the column containing the POI id (default: `id`).</span>
+<span class="sd">        col_name (string): Name of the column containing the POI name (default: `name`).</span>
+<span class="sd">        col_lon (string): Name of the column containing the POI longitude (default: `lon`).</span>
+<span class="sd">        col_lat (string): Name of the column containing the POI latitude (default: `lat`).</span>
+<span class="sd">        col_kwds (string): Name of the column containing the POI keywords (default: `kwds`).</span>
+<span class="sd">        col_sep (string): Column delimiter (default: `;`).</span>
+<span class="sd">        kwds_sep (string): Keywords delimiter (default: `,`).</span>
+<span class="sd">        source_crs (string): Coordinate Reference System of input data (default: `EPSG:4326`).</span>
+<span class="sd">        target_crs (string): Coordinate Reference System of the GeoDataFrame to be created (default: `EPSG:4326`).</span>
+<span class="sd">        keep_other_cols (bool): Whether to keep the rest of the columns in the csv file (default: `False`).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A POI GeoDataFrame with columns `id`, `name` and `kwds`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">lon_lat_to_point</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">c_lon</span><span class="p">,</span> <span class="n">c_lat</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">x_lon</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">c_lon</span><span class="p">])</span>
+            <span class="n">y_lat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">c_lat</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x_lon</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y_lat</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Point</span><span class="p">(</span><span class="n">x_lon</span><span class="p">,</span> <span class="n">y_lat</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;NaN&#39;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;NaN&#39;</span><span class="p">)</span>
+
+    <span class="n">pois</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">col_sep</span><span class="p">,</span> <span class="n">error_bad_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">init_poi_size</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pois</span><span class="p">)</span>
+    <span class="n">subset_cols</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Columns to Check for N/A, Nulls</span>
+    <span class="k">if</span> <span class="n">keep_other_cols</span><span class="p">:</span>
+        <span class="n">subset_cols</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">subset_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col_id</span><span class="p">,</span> <span class="n">col_lon</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">subset_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">col_kwds</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">subset_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col_kwds</span><span class="p">)</span>
+
+    <span class="c1"># Geometry Column(Uncleaned)</span>
+    <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">lon_lat_to_point</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col_lon</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">subset_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;geometry&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Drop Columns Not in subset Columns.</span>
+    <span class="n">drop_columns</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">subset_cols</span><span class="p">)</span>
+    <span class="n">pois</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">drop_columns</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Drop all N/A, Null rows from DataFrame.</span>
+    <span class="n">pois</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">init_poi_size</span> <span class="o">-</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Skipped&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">init_poi_size</span> <span class="o">-</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="s2">&quot;rows due to errors.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">col_kwds</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+        <span class="n">pois</span><span class="p">[</span><span class="n">col_kwds</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="n">col_kwds</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">kwds_sep</span><span class="p">))</span>
+
+    <span class="n">source_crs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">source_crs</span><span class="p">}</span>
+    <span class="n">target_crs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">target_crs</span><span class="p">}</span>
+    <span class="n">pois</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">source_crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">target_crs</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">col_lon</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">pois</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Panagiotis Kalampokis, Dimitris Skoutas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
