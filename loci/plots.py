@@ -3,6 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import folium
 from folium.plugins import HeatMap
+from folium.plugins import MarkerCluster
 from loci.analytics import bbox
 
 
@@ -28,28 +29,34 @@ def map_pois(pois, tiles='OpenStreetMap', width='100%', height='100%', show_bbox
     bb = bbox(pois)
     map_center = [bb.centroid.y, bb.centroid.x]
 
+    # Initialize the map
     m = folium.Map(location=map_center, tiles=tiles, width=width, height=height)
 
-    # Automatically set zoom level
+    # Automatically set the zoom level
     m.fit_bounds(([bb.bounds[1], bb.bounds[0]], [bb.bounds[3], bb.bounds[2]]))
 
-    folium.GeoJson(pois, tooltip=folium.features.GeoJsonTooltip(fields=['id', 'name', 'kwds'],
-                                                                aliases=['ID:', 'Name:', 'Keywords:'])).add_to(m)
+    # Add pois to a marker cluster
+    coords, popups = [], []
+    for idx, poi in pois.iterrows():
+        coords.append([poi.geometry.y, poi.geometry.x])
+        label = poi['id'] + '<br>' + poi['name'] + '<br>' + ' '.join(poi['kwds'])
+        popups.append(folium.IFrame(label, width=300, height=100))
+
+    poi_layer = folium.FeatureGroup(name='pois')
+    poi_layer.add_children(MarkerCluster(locations=coords, popups=popups))
+    m.add_children(poi_layer)
+
+    # folium.GeoJson(pois, tooltip=folium.features.GeoJsonTooltip(fields=['id', 'name', 'kwds'],
+    #                                                             aliases=['ID:', 'Name:', 'Keywords:'])).add_to(m)
+
     if show_bbox:
         folium.GeoJson(bb).add_to(m)
 
     return m
 
 
-def barchart(data,
-             orientation='Vertical',
-             x_axis_label='',
-             y_axis_label='',
-             plot_title='',
-             bar_width=0.5,
-             plot_width=15,
-             plot_height=5,
-             top_k=10
+def barchart(data, orientation='Vertical', x_axis_label='', y_axis_label='', plot_title='', bar_width=0.5,
+             plot_width=15, plot_height=5, top_k=10
              ):
     """Plots a bar chart with the given data.
 
