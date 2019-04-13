@@ -5,7 +5,7 @@ import math
 
 
 def read_poi_csv(input_file, col_id='id', col_name='name', col_lon='lon', col_lat='lat', col_kwds='kwds', col_sep=';',
-                 kwds_sep=',', source_crs='EPSG:4326', target_crs='EPSG:4326', keep_other_cols=False):
+                 kwds_sep=',', source_crs = 'EPSG:4326', target_crs = 'EPSG:4326', keep_other_cols=False):
     """Creates a POI GeoDataFrame from an input CSV file.
 
     Args:
@@ -71,5 +71,7 @@ def read_poi_csv(input_file, col_id='id', col_name='name', col_lon='lon', col_la
     source_crs = {'init': source_crs}
     target_crs = {'init': target_crs}
     pois = gpd.GeoDataFrame(pois, crs=source_crs, geometry=pois['geometry']).to_crs(target_crs).drop(columns=[col_lon, col_lat])
+
+    print('Loaded ' + str(len(pois.index)) + ' POIs.')
 
     return pois

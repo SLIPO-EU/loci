@@ -1,81 +1,62 @@
 from time import time
 from sklearn.cluster import DBSCAN
 import numpy as np
-import shapely as shp
+from shapely.geometry import MultiPoint
 from geopandas import GeoDataFrame
 from hdbscan import HDBSCAN
 
 
-def dbscan(pois, eps, minpts):
-    """Computes clusters using the DBSCAN algorithm.
+def compute_clusters(pois, alg='hdbscan', min_pts=None, eps=None):
+    """Computes clusters using the DBSCAN or the HDBSCAN algorithms.
 
     Args:
          pois (GeoDataFrame): A POI GeoDataFrame.
+         alg (string): The clustering algorithm to use (dbscan or hdbscan; default: hdbscan).
+         min_pts (integer): The minimum number of neighbors for a dense point.
          eps (float): The neighborhood radius.
-         minpts (integer): The minimum number of points in the neighborhood to be considered as dense.
 
     Returns:
-          A GeoDataFrame containing the clustered POIs and their labels (not including noise points).
+          A GeoDataFrame containing the clustered POIs and their labels, a GeoDataFrame containing the POIs that are
+          not part of any cluster, and a GeoDataFrame containing the cluster borders.
     """
 
     # Prepare list of coordinates
-    t0 = time()
     poi_list = [[p.x, p.y] for p in pois['geometry']]
     data_arr = np.array(poi_list)
     del poi_list[:]
 
-    # Run DBSCAN
-    db = DBSCAN(eps=eps, min_samples=minpts).fit(data_arr)
-    labels = db.labels_
-    num_clusters = len(set(labels))
-    print('Number of clusters: %d' % (num_clusters-1))
+    # Compute the clusters
+    t0 = time()
+    if alg == 'dbscan':
+        clusterer = DBSCAN(eps=eps, min_samples=min_pts).fit(data_arr)
+        labels = clusterer.labels_
+        num_clusters = len(set(labels))
+    else:
+        clusterer = HDBSCAN(min_cluster_size=min_pts)
+        labels = clusterer.fit_predict(data_arr)
+        num_clusters = len(set(labels))
+
+    print("Done in %0.3fs." % (time() - t0))
 
     # Assign cluster labels to initial POIs
     pois['label'] = labels
-    pois = pois[pois.label > -1]
-    print("Done in %0.3fs." % (time() - t0))
 
-    cluster_borders = pois.groupby(['label'], sort=False)['geometry'].agg([list, np.size])
-    geom = [shp.geometry.MultiPoint(x).convex_hull for x in cluster_borders['list']]
+    # Compute cluster borders using convex hull
+    clustered_pois = pois.loc[pois['label'] > -1]
+    cluster_borders = clustered_pois.groupby(['label'], sort=False)['geometry'].agg([list, np.size])
+    geom = [MultiPoint(x).convex_hull for x in cluster_borders['list']]
     cluster_borders = GeoDataFrame(cluster_borders, crs=pois.crs, geometry=geom)
-    cluster_borders.rename(columns={'list': 'contents'}, inplace=True)
-    cluster_borders = cluster_borders[['contents', 'geometry', 'size']]
+    cluster_borders = cluster_borders.drop('list', axis=1)
+    cluster_borders = cluster_borders[['geometry', 'size']]
+    cluster_borders = cluster_borders.reset_index()
+    cluster_borders = cluster_borders.sort_values(by='size', ascending=False)
 
-    return pois, cluster_borders
+    # Separate POIs that are inside clusters from those that are noise
+    pois_in_clusters = pois.loc[pois['label'] > -1]
+    pois_noise = pois.loc[pois['label'] == -1]
 
-
-def hdbscan(pois, minpts):
-    """Computes clusters using the HDBSCAN algorithm.
-
-    Args:
-         pois (GeoDataFrame): A POI GeoDataFrame.
-         minpts (integer): The minimum number of points in the neighborhood to be considered as dense.
-
-    Returns:
-          A GeoDataFrame containing the clustered POIs and their labels (not including noise points).
-    """
-
-    t0 = time()
-    poi_list = [[p.x, p.y] for p in pois['geometry']]
-    data_arr = np.array(poi_list)
-    del poi_list[:]
-
-    # Run HDBSCAN
-    clusterer = HDBSCAN(min_cluster_size=minpts)
-    labels = clusterer.fit_predict(data_arr)
-
-    num_clusters = len(set(labels))
     print('Number of clusters: %d' % (num_clusters - 1))
+    print('Number of clustered POIs: %d' % (len(pois_in_clusters)))
+    print('Number of outlier POIs: %d' % (len(pois_noise)))
 
-    # Assign cluster labels to initial POIs
-    pois['label'] = labels
-    pois = pois[pois.label > -1]
-    print("Done in %0.3fs." % (time() - t0))
-
-    cluster_borders = pois.groupby(['label'], sort=False)['geometry'].agg([list, np.size])
-    geom = [shp.geometry.MultiPoint(x).convex_hull for x in cluster_borders['list']]
-    cluster_borders = GeoDataFrame(cluster_borders, crs=pois.crs, geometry=geom)
-    cluster_borders.rename(columns={'list': 'contents'}, inplace=True)
-    cluster_borders = cluster_borders[['contents', 'geometry', 'size']]
-
-    return pois, cluster_borders
+    return pois_in_clusters, pois_noise, cluster_borders

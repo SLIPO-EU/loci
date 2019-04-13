@@ -6,6 +6,7 @@ from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster
 from loci.analytics import bbox, kwds_freq
 from wordcloud import WordCloud
+from pysal.viz.mapclassify import Natural_Breaks
 
 
 def map_pois(pois, tiles='OpenStreetMap', width='100%', height='100%', show_bbox=False):
@@ -23,6 +24,7 @@ def map_pois(pois, tiles='OpenStreetMap', width='100%', height='100%', show_bbox
         A Folium Map object displaying the given POIs.
     """
 
+    # Set the crs to WGS84
     if pois.crs['init'] != '4326':
         pois = pois.to_crs({'init': 'epsg:4326'})
 
@@ -130,11 +132,12 @@ def plot_wordcloud(pois, bg_color='black', width=400, height=200):
     plt.show()
 
 
-def heatmap(pois, width='100%', height='100%', radius=10):
+def heatmap(pois, tiles='OpenStreetMap', width='100%', height='100%', radius=10):
     """Generates a heatmap of the input POIs.
 
     Args:
         pois (GeoDataFrame): A POIs GeoDataFrame.
+        tiles (string): The tiles to use for the map (default: `OpenStreetMap`).
         width (integer or percentage): Width of the map in pixels or percentage (default: 100%).
         height (integer or percentage): Height of the map in pixels or percentage (default: 100%).
         radius (float): Radius of each point of the heatmap (default: 10).
@@ -143,6 +146,7 @@ def heatmap(pois, width='100%', height='100%', radius=10):
         A Folium Map object displaying the heatmap generated from the POIs.
     """
 
+    # Set the crs to WGS84
     if pois.crs['init'] != '4326':
         pois = pois.to_crs({'init': 'epsg:4326'})
 
@@ -150,7 +154,7 @@ def heatmap(pois, width='100%', height='100%', radius=10):
     bb = bbox(pois)
     map_center = [bb.centroid.y, bb.centroid.x]
 
-    heat_map = folium.Map(location=map_center, width=width, height=height)
+    heat_map = folium.Map(location=map_center, tiles=tiles, width=width, height=height)
 
     # Automatically set zoom level
     heat_map.fit_bounds(([bb.bounds[1], bb.bounds[0]], [bb.bounds[3], bb.bounds[2]]))
@@ -200,5 +204,48 @@ def map_grid(g, score_column='score', percentiles=(0.5, 0.8, 0.9, 0.95, 0.98, 0.
 
     # Automatically set zoom level
     m.fit_bounds(([bb.bounds[1], bb.bounds[0]], [bb.bounds[3], bb.bounds[2]]))
+
+    return m
+
+
+def map_choropleth(areas, id_field, value_field, fill_color='YlOrRd', fill_opacity=0.6, num_bins=5,
+                   tiles='OpenStreetMap', width='100%', height='100%'):
+    """Returns a Folium Map showing the clusters. Map center and zoom level are set automatically.
+
+    Args:
+         areas (GeoDataFrame): A GeoDataFrame containing the areas to be displayed.
+         id_field (string): The name of the column to use as id.
+         value_field (string): The name of the column indicating the area's value.
+         fill_color (string): A string indicating a Matplotlib colormap (default: YlOrRd).
+         fill_opacity (float): Opacity level (default: 0.6).
+         num_bins (int): The number of bins for the threshold scale (default: 5).
+         tiles (string): The tiles to use for the map (default: `OpenStreetMap`).
+         width (integer or percentage): Width of the map in pixels or percentage (default: 100%).
+         height (integer or percentage): Height of the map in pixels or percentage (default: 100%).
+
+    Returns:
+        A Folium Map object displaying the given clusters.
+    """
+
+    # Set the crs to WGS84
+    if areas.crs['init'] != '4326':
+        areas = areas.to_crs({'init': 'epsg:4326'})
+
+    # Automatically center the map at the center of the bounding box enclosing the POIs.
+    bb = bbox(areas)
+    map_center = [bb.centroid.y, bb.centroid.x]
+
+    # Initialize the map
+    m = folium.Map(location=map_center, tiles=tiles, width=width, height=height)
+
+    # Automatically set the zoom level
+    m.fit_bounds(([bb.bounds[1], bb.bounds[0]], [bb.bounds[3], bb.bounds[2]]))
+
+    threshold_scale = Natural_Breaks(areas[value_field], k=num_bins).bins.tolist()
+    threshold_scale.insert(0, areas[value_field].min())
+
+    folium.Choropleth(areas, data=areas, columns=[id_field, value_field],
+                      key_on='feature.properties.{}'.format(id_field), fill_color=fill_color, fill_opacity=fill_opacity,
+                      threshold_scale=threshold_scale).add_to(m)
 
     return m

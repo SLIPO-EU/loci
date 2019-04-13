@@ -8,5 +8,5 @@ setup(
    author_email='pkalampokis@imis.athena-innovation.gr, dskoutas@imis.athena-innovation.gr',
    packages=['loci'],
    install_requires=['geopandas', 'shapely', 'pandas', 'numpy', 'matplotlib', 'folium', 'scikit-learn', 'hdbscan',
-                     'scipy', 'networkx', 'wordcloud']
+                     'scipy', 'networkx', 'wordcloud', 'pysal']
 )
