@@ -2,13 +2,16 @@
 
 #### Overview
 
-LOCI is a Python library providing high-level functions for analyzing and visualizing POI data. It currently supports the following functionalities:
+LOCI is a Python library providing high-level functions for exploring, mining and visualizing Points and Areas of Interest. It is under ongoing development. It currently supports the following functionalities:
 
-- Create a GeoDataFrame with POI data from a CSV file.
+- Create a GeoDataFrame from POI data in a CSV file.
+- Display POIs on the map.
 - Filter POIs by category or keywords.
 - Compute and visualize statistics about POI categories or keywords.
-- Generate a heatmap of POI locations.
+- Generate word clouds from POI categories or keywords.
+- Generate heatmaps from POI locations.
 - Construct and visualize a grid structure over POI locations.
+- Compute and visualize POI clusters using density-based clustering.
 
 #### Quick start
 

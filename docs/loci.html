@@ -244,7 +244,8 @@ by dividing with the number of rows in <cite>gdf</cite> (default: False).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame containing the clustered POIs and their labels, and a GeoDataFrame containing cluster borders.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame containing the clustered POIs and their labels, a GeoDataFrame containing the POIs that are
+not part of any cluster, and a GeoDataFrame containing the cluster borders.</p>
 </td>
 </tr>
 </tbody>
@@ -368,7 +369,7 @@ and contains the following columns:</p>
 
 <dl class="function">
 <dt id="loci.plots.heatmap">
-<code class="descclassname">loci.plots.</code><code class="descname">heatmap</code><span class="sig-paren">(</span><em>pois</em>, <em>width='100%'</em>, <em>height='100%'</em>, <em>radius=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.heatmap" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">loci.plots.</code><code class="descname">heatmap</code><span class="sig-paren">(</span><em>pois</em>, <em>tiles='OpenStreetMap'</em>, <em>width='100%'</em>, <em>height='100%'</em>, <em>radius=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#heatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.heatmap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a heatmap of the input POIs.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -376,6 +377,7 @@ and contains the following columns:</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>pois</strong> (<em>GeoDataFrame</em>) – A POIs GeoDataFrame.</li>
+<li><strong>tiles</strong> (<em>string</em>) – The tiles to use for the map (default: <cite>OpenStreetMap</cite>).</li>
 <li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
 <li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
 <li><strong>radius</strong> (<em>float</em>) – Radius of each point of the heatmap (default: 10).</li>
@@ -383,6 +385,34 @@ and contains the following columns:</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the heatmap generated from the POIs.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.map_choropleth">
+<code class="descclassname">loci.plots.</code><code class="descname">map_choropleth</code><span class="sig-paren">(</span><em>areas</em>, <em>id_field</em>, <em>value_field</em>, <em>fill_color='YlOrRd'</em>, <em>fill_opacity=0.6</em>, <em>num_bins=5</em>, <em>tiles='OpenStreetMap'</em>, <em>width='100%'</em>, <em>height='100%'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_choropleth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_choropleth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Folium Map showing the clusters. Map center and zoom level are set automatically.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>areas</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame containing the areas to be displayed.</li>
+<li><strong>id_field</strong> (<em>string</em>) – The name of the column to use as id.</li>
+<li><strong>value_field</strong> (<em>string</em>) – The name of the column indicating the area’s value.</li>
+<li><strong>fill_color</strong> (<em>string</em>) – A string indicating a Matplotlib colormap (default: YlOrRd).</li>
+<li><strong>fill_opacity</strong> (<em>float</em>) – Opacity level (default: 0.6).</li>
+<li><strong>num_bins</strong> (<em>int</em>) – The number of bins for the threshold scale (default: 5).</li>
+<li><strong>tiles</strong> (<em>string</em>) – The tiles to use for the map (default: <cite>OpenStreetMap</cite>).</li>
+<li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
+<li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the given clusters.</p>
 </td>
 </tr>
 </tbody>

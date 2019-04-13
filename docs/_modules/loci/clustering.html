@@ -162,7 +162,8 @@
 <span class="sd">         eps (float): The neighborhood radius.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">          A GeoDataFrame containing the clustered POIs and their labels, and a GeoDataFrame containing cluster borders.</span>
+<span class="sd">          A GeoDataFrame containing the clustered POIs and their labels, a GeoDataFrame containing the POIs that are</span>
+<span class="sd">          not part of any cluster, and a GeoDataFrame containing the cluster borders.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Prepare list of coordinates</span>
@@ -182,7 +183,6 @@
         <span class="n">num_clusters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done in </span><span class="si">%0.3f</span><span class="s2">s.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of clusters: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num_clusters</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
     <span class="c1"># Assign cluster labels to initial POIs</span>
     <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">labels</span>
@@ -194,8 +194,18 @@
     <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">cluster_borders</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">pois</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">geom</span><span class="p">)</span>
     <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">cluster_borders</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">cluster_borders</span><span class="p">[[</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">]]</span>
+    <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">cluster_borders</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">cluster_borders</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">pois</span><span class="p">,</span> <span class="n">cluster_borders</span></div>
+    <span class="c1"># Separate POIs that are inside clusters from those that are noise</span>
+    <span class="n">pois_in_clusters</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pois_noise</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of clusters: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num_clusters</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of clustered POIs: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pois_in_clusters</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of outlier POIs: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pois_noise</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">pois_in_clusters</span><span class="p">,</span> <span class="n">pois_noise</span><span class="p">,</span> <span class="n">cluster_borders</span></div>
 </pre></div>
 
            </div>

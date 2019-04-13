@@ -218,6 +218,8 @@
     <span class="n">target_crs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">target_crs</span><span class="p">}</span>
     <span class="n">pois</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">source_crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">target_crs</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">col_lon</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">])</span>
 
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loaded &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; POIs.&#39;</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">pois</span></div>
 </pre></div>
 
