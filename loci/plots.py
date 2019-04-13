@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import folium
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster
-from loci.analytics import bbox
+from loci.analytics import bbox, kwds_freq
+from wordcloud import WordCloud
 
 
 def map_pois(pois, tiles='OpenStreetMap', width='100%', height='100%', show_bbox=False):
@@ -43,8 +44,8 @@ def map_pois(pois, tiles='OpenStreetMap', width='100%', height='100%', show_bbox
         popups.append(folium.IFrame(label, width=300, height=100))
 
     poi_layer = folium.FeatureGroup(name='pois')
-    poi_layer.add_children(MarkerCluster(locations=coords, popups=popups))
-    m.add_children(poi_layer)
+    poi_layer.add_child(MarkerCluster(locations=coords, popups=popups))
+    m.add_child(poi_layer)
 
     # folium.GeoJson(pois, tooltip=folium.features.GeoJsonTooltip(fields=['id', 'name', 'kwds'],
     #                                                             aliases=['ID:', 'Name:', 'Keywords:'])).add_to(m)
@@ -105,6 +106,28 @@ def barchart(data, orientation='Vertical', x_axis_label='', y_axis_label='', plo
     plt.title(plot_title)
 
     return plt
+
+
+def plot_wordcloud(pois, bg_color='black', width=400, height=200):
+    """Generates and plots a word cloud from the keywords of the given POIs.
+
+     Args:
+        pois (GeoDataFrame): The POIs from which the keywords will be used to generate the word cloud.
+        bg_color (string): The background color to use for the plot (default: black).
+        width (int): The width of the plot.
+        height (int): The height of the plot.
+    """
+
+    # Compute keyword frequences
+    kf = kwds_freq(pois)
+
+    # Generate the word cloud
+    wordcloud = WordCloud(background_color=bg_color, width=width, height=height).generate_from_frequencies(kf)
+
+    # Show plot
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis("off")
+    plt.show()
 
 
 def heatmap(pois, width='100%', height='100%', radius=10):
