@@ -2,6 +2,7 @@ import math
 from shapely.geometry import box
 from scipy.stats import zscore
 import geopandas as gpd
+from time import time
 
 
 def grid(pois, cell_width=None, cell_height=None, cell_size_ratio=0.01, znorm=False, neighborhood=False):
@@ -43,6 +44,7 @@ def grid(pois, cell_width=None, cell_height=None, cell_size_ratio=0.01, znorm=Fa
         A GeoDataFrame as described above.
     """
 
+    t0 = time()
     orig_crs = pois.crs
     minx, miny, maxx, maxy = pois.geometry.total_bounds
 
@@ -52,23 +54,23 @@ def grid(pois, cell_width=None, cell_height=None, cell_size_ratio=0.01, znorm=Fa
     if cell_height is None:
         cell_height = cell_size_ratio * (maxy - miny)
 
-    num_of_columns = math.ceil((maxx - minx) / cell_width)
-    num_of_rows = math.ceil((maxy - miny) / cell_height)
+    num_columns = math.ceil((maxx - minx) / cell_width)
+    num_rows = math.ceil((maxy - miny) / cell_height)
 
     def grid_cell(poi):
         cell_x = math.floor((poi.x - minx) / cell_width)
         cell_y = math.floor((poi.y - miny) / cell_height)
 
-        return int(cell_x * num_of_columns + cell_y)
+        return int(cell_x * num_columns + cell_y)
 
     pois['cell_id'] = pois['geometry'].apply(lambda row: grid_cell(row))
 
     pois = pois.groupby('cell_id', sort=False)['id'].agg([list])
 
     def score(row):
-        (cell_x, cell_y) = divmod(row.name, num_of_columns)
+        (cell_x, cell_y) = divmod(row.name, num_columns)
 
-        cell_id = int(cell_x * num_of_columns + cell_y)
+        cell_id = int(cell_x * num_columns + cell_y)
         cell_score = len(row['list'])
         geometry = box(minx + cell_x * cell_width, miny + cell_y * cell_height, minx + (cell_x + 1) * cell_width, miny
                        + (cell_y + 1) * cell_height)
@@ -95,7 +97,7 @@ def grid(pois, cell_width=None, cell_height=None, cell_size_ratio=0.01, znorm=Fa
                 for j in range(y - 1, y + 2):
                     nb_sum += cell_id_score_dict.get((i, j)) or 0
 
-            cell_id_nbsum_dict[int(x * num_of_columns + y)] = nb_sum
+            cell_id_nbsum_dict[int(x * num_columns + y)] = nb_sum
 
         pois['score_nb'] = pois.index.map(cell_id_nbsum_dict)
         del cell_id_score_dict
@@ -117,4 +119,6 @@ def grid(pois, cell_width=None, cell_height=None, cell_size_ratio=0.01, znorm=Fa
 
     gpois = gpd.GeoDataFrame(pois, crs=orig_crs, geometry=pois.geometry)
 
-    return gpois, num_of_columns, num_of_rows
+    print("Done in %0.3fs." % (time() - t0))
+    
+    return gpois, num_columns, num_rows

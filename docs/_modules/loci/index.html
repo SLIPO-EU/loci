@@ -148,6 +148,7 @@
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">box</span>
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">zscore</span>
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span>
 
 
 <div class="viewcode-block" id="grid"><a class="viewcode-back" href="../../loci.html#loci.index.grid">[docs]</a><span class="k">def</span> <span class="nf">grid</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">cell_width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cell_height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cell_size_ratio</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">znorm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">neighborhood</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -189,6 +190,7 @@
 <span class="sd">        A GeoDataFrame as described above.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="n">orig_crs</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">crs</span>
     <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">total_bounds</span>
 
@@ -198,23 +200,23 @@
     <span class="k">if</span> <span class="n">cell_height</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cell_height</span> <span class="o">=</span> <span class="n">cell_size_ratio</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span>
 
-    <span class="n">num_of_columns</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_width</span><span class="p">)</span>
-    <span class="n">num_of_rows</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_height</span><span class="p">)</span>
+    <span class="n">num_columns</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">maxx</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_width</span><span class="p">)</span>
+    <span class="n">num_rows</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">maxy</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_height</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">grid_cell</span><span class="p">(</span><span class="n">poi</span><span class="p">):</span>
         <span class="n">cell_x</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">poi</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">minx</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_width</span><span class="p">)</span>
         <span class="n">cell_y</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">poi</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">miny</span><span class="p">)</span> <span class="o">/</span> <span class="n">cell_height</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">cell_x</span> <span class="o">*</span> <span class="n">num_of_columns</span> <span class="o">+</span> <span class="n">cell_y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">cell_x</span> <span class="o">*</span> <span class="n">num_columns</span> <span class="o">+</span> <span class="n">cell_y</span><span class="p">)</span>
 
     <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;cell_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">grid_cell</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
 
     <span class="n">pois</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;cell_id&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">list</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
-        <span class="p">(</span><span class="n">cell_x</span><span class="p">,</span> <span class="n">cell_y</span><span class="p">)</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">num_of_columns</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">cell_x</span><span class="p">,</span> <span class="n">cell_y</span><span class="p">)</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">num_columns</span><span class="p">)</span>
 
-        <span class="n">cell_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cell_x</span> <span class="o">*</span> <span class="n">num_of_columns</span> <span class="o">+</span> <span class="n">cell_y</span><span class="p">)</span>
+        <span class="n">cell_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cell_x</span> <span class="o">*</span> <span class="n">num_columns</span> <span class="o">+</span> <span class="n">cell_y</span><span class="p">)</span>
         <span class="n">cell_score</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">])</span>
         <span class="n">geometry</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="n">minx</span> <span class="o">+</span> <span class="n">cell_x</span> <span class="o">*</span> <span class="n">cell_width</span><span class="p">,</span> <span class="n">miny</span> <span class="o">+</span> <span class="n">cell_y</span> <span class="o">*</span> <span class="n">cell_height</span><span class="p">,</span> <span class="n">minx</span> <span class="o">+</span> <span class="p">(</span><span class="n">cell_x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell_width</span><span class="p">,</span> <span class="n">miny</span>
                        <span class="o">+</span> <span class="p">(</span><span class="n">cell_y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">cell_height</span><span class="p">)</span>
@@ -241,7 +243,7 @@
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">):</span>
                     <span class="n">nb_sum</span> <span class="o">+=</span> <span class="n">cell_id_score_dict</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">))</span> <span class="ow">or</span> <span class="mi">0</span>
 
-            <span class="n">cell_id_nbsum_dict</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">num_of_columns</span> <span class="o">+</span> <span class="n">y</span><span class="p">)]</span> <span class="o">=</span> <span class="n">nb_sum</span>
+            <span class="n">cell_id_nbsum_dict</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">num_columns</span> <span class="o">+</span> <span class="n">y</span><span class="p">)]</span> <span class="o">=</span> <span class="n">nb_sum</span>
 
         <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;score_nb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cell_id_nbsum_dict</span><span class="p">)</span>
         <span class="k">del</span> <span class="n">cell_id_score_dict</span>
@@ -263,7 +265,9 @@
 
     <span class="n">gpois</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">orig_crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">pois</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">gpois</span><span class="p">,</span> <span class="n">num_of_columns</span><span class="p">,</span> <span class="n">num_of_rows</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done in </span><span class="si">%0.3f</span><span class="s2">s.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">gpois</span><span class="p">,</span> <span class="n">num_columns</span><span class="p">,</span> <span class="n">num_rows</span></div>
 </pre></div>
 
            </div>

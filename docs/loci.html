@@ -420,36 +420,9 @@ and contains the following columns:</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="loci.plots.map_grid">
-<code class="descclassname">loci.plots.</code><code class="descname">map_grid</code><span class="sig-paren">(</span><em>g</em>, <em>score_column='score'</em>, <em>percentiles=(0.5</em>, <em>0.8</em>, <em>0.9</em>, <em>0.95</em>, <em>0.98</em>, <em>0.99)</em>, <em>width='100%'</em>, <em>height='100%'</em>, <em>colormap='YlOrRd'</em>, <em>opacity=0.7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Displays a grid as a choropleth map.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>g</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame representing the grid index.</li>
-<li><strong>score_column</strong> (<em>string</em>) – Name of the column containing the score to use for the choropleth map (default: score).</li>
-<li><strong>percentiles</strong> (<em>array</em>) – The percentiles to use for the scale of the choropleth map.</li>
-<li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
-<li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
-<li><strong>colormap</strong> (<em>string</em>) – A string indicating a Matplotlib colormap (default: YlOrRd).</li>
-<li><strong>opacity</strong> (<em>float</em>) – Opacity (default: 0.7).</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the grid as a choropleth map.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="loci.plots.map_pois">
-<code class="descclassname">loci.plots.</code><code class="descname">map_pois</code><span class="sig-paren">(</span><em>pois</em>, <em>tiles='OpenStreetMap'</em>, <em>width='100%'</em>, <em>height='100%'</em>, <em>show_bbox=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_pois"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_pois" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a Folium Map showing the contents of the provided POIs GeoDataFrame.
-Map center and zoom level are set automatically.</p>
+<dt id="loci.plots.map_points">
+<code class="descclassname">loci.plots.</code><code class="descname">map_points</code><span class="sig-paren">(</span><em>pois</em>, <em>tiles='OpenStreetMap'</em>, <em>width='100%'</em>, <em>height='100%'</em>, <em>show_bbox=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Folium Map displaying the provided points. Map center and zoom level are set automatically.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
