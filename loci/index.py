@@ -120,5 +120,5 @@ def grid(pois, cell_width=None, cell_height=None, cell_size_ratio=0.01, znorm=Fa
     gpois = gpd.GeoDataFrame(pois, crs=orig_crs, geometry=pois.geometry)
 
     print("Done in %0.3fs." % (time() - t0))
-    
+
     return gpois, num_columns, num_rows

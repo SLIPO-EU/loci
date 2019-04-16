@@ -32,7 +32,7 @@ def compute_clusters(pois, alg='hdbscan', min_pts=None, eps=None):
         labels = clusterer.labels_
         num_clusters = len(set(labels))
     else:
-        clusterer = HDBSCAN(min_cluster_size=min_pts)
+        clusterer = HDBSCAN(min_cluster_size=min_pts, min_samples=min_pts)
         labels = clusterer.fit_predict(data_arr)
         num_clusters = len(set(labels))
 
@@ -41,19 +41,18 @@ def compute_clusters(pois, alg='hdbscan', min_pts=None, eps=None):
     # Assign cluster labels to initial POIs
     pois['label'] = labels
 
+    # Separate POIs that are inside clusters from those that are noise
+    pois_in_clusters = pois.loc[pois['label'] > -1]
+    pois_noise = pois.loc[pois['label'] == -1]
+
     # Compute cluster borders using convex hull
-    clustered_pois = pois.loc[pois['label'] > -1]
-    cluster_borders = clustered_pois.groupby(['label'], sort=False)['geometry'].agg([list, np.size])
+    cluster_borders = pois_in_clusters.groupby(['label'], sort=False)['geometry'].agg([list, np.size])
     geom = [MultiPoint(x).convex_hull for x in cluster_borders['list']]
     cluster_borders = GeoDataFrame(cluster_borders, crs=pois.crs, geometry=geom)
     cluster_borders = cluster_borders.drop('list', axis=1)
     cluster_borders = cluster_borders[['geometry', 'size']]
     cluster_borders = cluster_borders.reset_index()
     cluster_borders = cluster_borders.sort_values(by='size', ascending=False)
-
-    # Separate POIs that are inside clusters from those that are noise
-    pois_in_clusters = pois.loc[pois['label'] > -1]
-    pois_noise = pois.loc[pois['label'] == -1]
 
     print('Number of clusters: %d' % (num_clusters - 1))
     print('Number of clustered POIs: %d' % (len(pois_in_clusters)))
