@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib
+from matplotlib import colors
+from matplotlib import cm
 import matplotlib.pyplot as plt
 import folium
 from folium.plugins import HeatMap
@@ -57,9 +59,48 @@ def map_points(pois, tiles='OpenStreetMap', width='100%', height='100%', show_bb
     return m
 
 
+def map_geometries(gdf, tiles='OpenStreetMap', width='100%', height='100%'):
+    """Returns a Folium Map displaying the provided geometries. Map center and zoom level are set automatically.
+
+    Args:
+         gdf (GeoDataFrame): A GeoDataFrame containing the geometries to be displayed.
+         tiles (string): The tiles to use for the map (default: `OpenStreetMap`).
+         width (integer or percentage): Width of the map in pixels or percentage (default: 100%).
+         height (integer or percentage): Height of the map in pixels or percentage (default: 100%).
+
+    Returns:
+        A Folium Map object displaying the given geometries.
+    """
+
+    # Set the crs to WGS84
+    if gdf.crs['init'] != '4326':
+        gdf = gdf.to_crs({'init': 'epsg:4326'})
+
+    # Automatically center the map at the center of the bounding box enclosing the POIs.
+    bb = bbox(gdf)
+    map_center = [bb.centroid.y, bb.centroid.x]
+
+    # Initialize the map
+    m = folium.Map(location=map_center, tiles=tiles, width=width, height=height)
+
+    # Automatically set the zoom level
+    m.fit_bounds(([bb.bounds[1], bb.bounds[0]], [bb.bounds[3], bb.bounds[2]]))
+
+    # Construct tooltip
+    fields = list(gdf.columns.values)
+    fields.remove('geometry')
+    if 'style' in fields:
+        fields.remove('style')
+    tooltip = folium.features.GeoJsonTooltip(fields=fields)
+
+    # Add to map
+    folium.GeoJson(gdf, tooltip=tooltip).add_to(m)
+
+    return m
+
+
 def barchart(data, orientation='Vertical', x_axis_label='', y_axis_label='', plot_title='', bar_width=0.5,
-             plot_width=15, plot_height=5, top_k=10
-             ):
+             plot_width=15, plot_height=5, top_k=10):
     """Plots a bar chart with the given data.
 
     Args:
@@ -203,8 +244,67 @@ def map_choropleth(areas, id_field, value_field, fill_color='YlOrRd', fill_opaci
     threshold_scale = Natural_Breaks(areas[value_field], k=num_bins).bins.tolist()
     threshold_scale.insert(0, areas[value_field].min())
 
-    folium.Choropleth(areas, data=areas, columns=[id_field, value_field],
-                      key_on='feature.properties.{}'.format(id_field), fill_color=fill_color, fill_opacity=fill_opacity,
-                      threshold_scale=threshold_scale).add_to(m)
+    choropleth = folium.Choropleth(areas, data=areas, columns=[id_field, value_field],
+                                   key_on='feature.properties.{}'.format(id_field),
+                                   fill_color=fill_color, fill_opacity=fill_opacity,
+                                   threshold_scale=threshold_scale).add_to(m)
+
+    # Construct tooltip
+    fields = list(areas.columns.values)
+    fields.remove('geometry')
+    if 'style' in fields:
+        fields.remove('style')
+    tooltip = folium.features.GeoJsonTooltip(fields=fields)
+
+    choropleth.geojson.add_child(tooltip)
+
+    return m
+
+
+def map_clusters_with_topics(clusters_topics, viz_type='dominant', col_id='cluster_id', col_dominant='Dominant Topic',
+                             colormap='tab10', red='Topic0', green='Topic1', blue='Topic2', single_topic='Topic0',
+                             tiles='OpenStreetMap', width='100%', height='100%'):
+    """Returns a Folium Map showing the clusters colored based on their topics.
+
+    Args:
+         clusters_topics (GeoDataFrame): A GeoDataFrame containing the clusters to be displayed and their topics.
+         viz_type (string): Indicates how to assign colors based on topics. One of: 'dominant', 'single', 'rgb'.
+         col_id (string): The name of the column indicating the cluster id (default: cluster_id).
+         col_dominant (string): The name of the column indicating the dominant topic (default: Dominant Topic).
+         colormap (string): A string indicating a Matplotlib colormap (default: tab10).
+         red (string): The name of the column indicating the topic to assign to red (default: Topic0).
+         green (string): The name of the column indicating the topic to assign to green (default: Topic1).
+         blue (string): The name of the column indicating the topic to assign to blue (default: Topic2).
+         single_topic (string): The name of the column indicating the topic to use (default: Topic0).
+         tiles (string): The tiles to use for the map (default: `OpenStreetMap`).
+         width (integer or percentage): Width of the map in pixels or percentage (default: 100%).
+         height (integer or percentage): Height of the map in pixels or percentage (default: 100%).
+
+    Returns:
+        A Folium Map object displaying the given clusters colored by their topics.
+    """
+
+    def style_gen_dominant(row):
+        cmap = cm.get_cmap(colormap)
+        rgb = cmap(row[col_dominant])
+        color = colors.rgb2hex(rgb)
+        return {'fillColor': color, 'weight': 2, 'color': 'black', 'fillOpacity': 0.8}
+
+    def style_gen_mixed(row):
+        r = round(row[red] * 255) if red is not None else 0
+        g = round(row[green] * 255) if green is not None else 0
+        b = round(row[blue] * 255) if blue is not None else 0
+        color = '#{:02x}{:02x}{:02x}'.format(r, g, b)
+        return {'fillColor': color, 'weight': 2, 'color': 'black', 'fillOpacity': 0.8}
+
+    if viz_type == 'single':
+        m = map_choropleth(areas=clusters_topics, id_field=col_id, value_field=single_topic, tiles=tiles, width=width,
+                           height=height)
+    elif viz_type == 'rgb':
+        clusters_topics['style'] = clusters_topics.apply(lambda row: style_gen_mixed(row), axis=1)
+        m = map_geometries(clusters_topics, tiles=tiles, width=width, height=height)
+    else:
+        clusters_topics['style'] = clusters_topics.apply(lambda row: style_gen_dominant(row), axis=1)
+        m = map_geometries(clusters_topics, tiles=tiles, width=width, height=height)
 
     return m
