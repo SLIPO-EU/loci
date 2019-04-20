@@ -1,0 +1,258 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>loci.topics &mdash; loci 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> loci
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">loci</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>loci.topics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for loci.topics</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="k">import</span> <span class="n">CountVectorizer</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="k">import</span> <span class="n">LatentDirichletAllocation</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">GridSearchCV</span>
+<span class="kn">import</span> <span class="nn">pyLDAvis.sklearn</span>
+
+
+<div class="viewcode-block" id="topic_modeling"><a class="viewcode-back" href="../../loci.html#loci.topics.topic_modeling">[docs]</a><span class="k">def</span> <span class="nf">topic_modeling</span><span class="p">(</span><span class="n">clusters</span><span class="p">,</span> <span class="n">label_col</span><span class="o">=</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">,</span> <span class="n">kwds_col</span><span class="o">=</span><span class="s1">&#39;kwds&#39;</span><span class="p">,</span> <span class="n">num_of_topics</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kwds_per_topic</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Models clusters as documents, extracts topics, and assigns topics to clusters.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         clusters (GeoDataFrame): A POI GeoDataFrame with assigned cluster labels.</span>
+<span class="sd">         label_col (string): The name of the column containing the cluster labels (default: label).</span>
+<span class="sd">         kwds_col (string): The name of the column containing the keywords of each POI (default: kwds).</span>
+<span class="sd">         num_of_topics (int): The number of topics to extract (default: 3).</span>
+<span class="sd">         kwds_per_topic (int): The number of keywords to return per topic (default: 10).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">          A DataFrame containing the clusters-to-topics assignments and a DataFrame containing the topics-to-keywords</span>
+<span class="sd">          assignments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create a &quot;document&quot; for each cluster</span>
+    <span class="n">cluster_kwds</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">clusters</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">cluster_id</span><span class="p">,</span> <span class="n">kwds</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">label_col</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="n">kwds_col</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">cluster_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cluster_kwds</span><span class="p">:</span>
+            <span class="n">cluster_kwds</span><span class="p">[</span><span class="n">cluster_id</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="n">cluster_kwds</span><span class="p">[</span><span class="n">cluster_id</span><span class="p">]</span> <span class="o">+=</span> <span class="n">w</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+
+    <span class="c1"># Vectorize the corpus</span>
+    <span class="n">vectorizer</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">()</span>
+    <span class="n">corpus_vectorized</span> <span class="o">=</span> <span class="n">vectorizer</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">cluster_kwds</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="c1"># Extract the topics</span>
+    <span class="n">search_params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;n_components&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">num_of_topics</span><span class="p">]}</span>
+    <span class="n">lda</span> <span class="o">=</span> <span class="n">LatentDirichletAllocation</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">lda</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="n">search_params</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">corpus_vectorized</span><span class="p">)</span>
+    <span class="n">lda_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">best_estimator_</span>
+
+    <span class="c1"># Top keywords per topic</span>
+    <span class="n">keywords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vectorizer</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">())</span>
+    <span class="n">topic_keywords</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">topic_weights</span> <span class="ow">in</span> <span class="n">lda_model</span><span class="o">.</span><span class="n">components_</span><span class="p">:</span>
+        <span class="n">top_keyword_locs</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">topic_weights</span><span class="p">)</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[:</span><span class="n">kwds_per_topic</span><span class="p">]</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">keywords</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">top_keyword_locs</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">{0:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">topic_weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">clusters</span><span class="o">.</span><span class="n">index</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">top_keyword_locs</span><span class="p">]</span>
+        <span class="n">kf</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">))]</span>
+        <span class="n">topic_keywords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kf</span><span class="p">)</span>
+
+    <span class="n">topic_keywords</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">topic_keywords</span><span class="p">)</span>
+    <span class="n">topic_keywords</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Kwd &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">topic_keywords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+    <span class="n">topic_keywords</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Topic &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">topic_keywords</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+
+    <span class="c1"># Topics per cluster</span>
+    <span class="n">lda_output</span> <span class="o">=</span> <span class="n">lda_model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">corpus_vectorized</span><span class="p">)</span>
+    <span class="n">topic_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Topic&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lda_model</span><span class="o">.</span><span class="n">n_components</span><span class="p">)]</span>
+    <span class="n">cluster_names</span> <span class="o">=</span> <span class="n">cluster_kwds</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">cluster_topics</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">lda_output</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">topic_names</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">cluster_names</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+    <span class="n">dominant_topic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">cluster_topics</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">cluster_topics</span><span class="p">[</span><span class="s1">&#39;Dominant Topic&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dominant_topic</span>
+
+    <span class="c1"># Prepare a visualization for the topics</span>
+    <span class="n">visualized_topics</span> <span class="o">=</span> <span class="n">pyLDAvis</span><span class="o">.</span><span class="n">sklearn</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">lda_model</span><span class="p">,</span> <span class="n">corpus_vectorized</span><span class="p">,</span> <span class="n">vectorizer</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cluster_topics</span><span class="p">,</span> <span class="n">topic_keywords</span><span class="p">,</span> <span class="n">visualized_topics</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Panagiotis Kalampokis, Dimitris Skoutas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

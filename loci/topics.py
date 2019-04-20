@@ -17,7 +17,7 @@ def topic_modeling(clusters, label_col='cluster_id', kwds_col='kwds', num_of_top
          kwds_per_topic (int): The number of keywords to return per topic (default: 10).
 
     Returns:
-          A DataFrame containing the cluster-to-topics assignments and a DataFrame containing the topic-to-keyword
+          A DataFrame containing the clusters-to-topics assignments and a DataFrame containing the topics-to-keywords
           assignments.
     """
 

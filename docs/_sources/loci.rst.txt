@@ -20,6 +20,14 @@ loci.clustering module
     :undoc-members:
     :show-inheritance:
 
+loci.topics module
+----------------------
+
+.. automodule:: loci.topics
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    
 loci.index module
 -----------------
 

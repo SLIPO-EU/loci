@@ -24,6 +24,7 @@
         <script type="text/javascript" src="_static/jquery.js"></script>
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -87,6 +88,7 @@
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-loci.analytics">loci.analytics module</a></li>
 <li><a class="reference internal" href="#module-loci.clustering">loci.clustering module</a></li>
+<li><a class="reference internal" href="#module-loci.topics">loci.topics module</a></li>
 <li><a class="reference internal" href="#module-loci.index">loci.index module</a></li>
 <li><a class="reference internal" href="#module-loci.io">loci.io module</a></li>
 <li><a class="reference internal" href="#module-loci.plots">loci.plots module</a></li>
@@ -246,6 +248,34 @@ by dividing with the number of rows in <cite>gdf</cite> (default: False).</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame containing the clustered POIs and their labels, a GeoDataFrame containing the POIs that are
 not part of any cluster, and a GeoDataFrame containing the cluster borders.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-loci.topics">
+<span id="loci-topics-module"></span><h2>loci.topics module<a class="headerlink" href="#module-loci.topics" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="loci.topics.topic_modeling">
+<code class="descclassname">loci.topics.</code><code class="descname">topic_modeling</code><span class="sig-paren">(</span><em>clusters</em>, <em>label_col='cluster_id'</em>, <em>kwds_col='kwds'</em>, <em>num_of_topics=3</em>, <em>kwds_per_topic=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/topics.html#topic_modeling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.topics.topic_modeling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Models clusters as documents, extracts topics, and assigns topics to clusters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>clusters</strong> (<em>GeoDataFrame</em>) – A POI GeoDataFrame with assigned cluster labels.</li>
+<li><strong>label_col</strong> (<em>string</em>) – The name of the column containing the cluster labels (default: label).</li>
+<li><strong>kwds_col</strong> (<em>string</em>) – The name of the column containing the keywords of each POI (default: kwds).</li>
+<li><strong>num_of_topics</strong> (<em>int</em>) – The number of topics to extract (default: 3).</li>
+<li><strong>kwds_per_topic</strong> (<em>int</em>) – The number of keywords to return per topic (default: 10).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A DataFrame containing the clusters-to-topics assignments and a DataFrame containing the topics-to-keywords
+assignments.</p>
 </td>
 </tr>
 </tbody>
@@ -413,6 +443,60 @@ and contains the following columns:</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the given clusters.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.map_clusters_with_topics">
+<code class="descclassname">loci.plots.</code><code class="descname">map_clusters_with_topics</code><span class="sig-paren">(</span><em>clusters_topics</em>, <em>viz_type='dominant'</em>, <em>col_id='cluster_id'</em>, <em>col_dominant='Dominant Topic'</em>, <em>colormap='tab10'</em>, <em>red='Topic0'</em>, <em>green='Topic1'</em>, <em>blue='Topic2'</em>, <em>single_topic='Topic0'</em>, <em>tiles='OpenStreetMap'</em>, <em>width='100%'</em>, <em>height='100%'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_clusters_with_topics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_clusters_with_topics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Folium Map showing the clusters colored based on their topics.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>clusters_topics</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame containing the clusters to be displayed and their topics.</li>
+<li><strong>viz_type</strong> (<em>string</em>) – Indicates how to assign colors based on topics. One of: ‘dominant’, ‘single’, ‘rgb’.</li>
+<li><strong>col_id</strong> (<em>string</em>) – The name of the column indicating the cluster id (default: cluster_id).</li>
+<li><strong>col_dominant</strong> (<em>string</em>) – The name of the column indicating the dominant topic (default: Dominant Topic).</li>
+<li><strong>colormap</strong> (<em>string</em>) – A string indicating a Matplotlib colormap (default: tab10).</li>
+<li><strong>red</strong> (<em>string</em>) – The name of the column indicating the topic to assign to red (default: Topic0).</li>
+<li><strong>green</strong> (<em>string</em>) – The name of the column indicating the topic to assign to green (default: Topic1).</li>
+<li><strong>blue</strong> (<em>string</em>) – The name of the column indicating the topic to assign to blue (default: Topic2).</li>
+<li><strong>single_topic</strong> (<em>string</em>) – The name of the column indicating the topic to use (default: Topic0).</li>
+<li><strong>tiles</strong> (<em>string</em>) – The tiles to use for the map (default: <cite>OpenStreetMap</cite>).</li>
+<li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
+<li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the given clusters colored by their topics.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.map_geometries">
+<code class="descclassname">loci.plots.</code><code class="descname">map_geometries</code><span class="sig-paren">(</span><em>gdf</em>, <em>tiles='OpenStreetMap'</em>, <em>width='100%'</em>, <em>height='100%'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_geometries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_geometries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Folium Map displaying the provided geometries. Map center and zoom level are set automatically.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gdf</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame containing the geometries to be displayed.</li>
+<li><strong>tiles</strong> (<em>string</em>) – The tiles to use for the map (default: <cite>OpenStreetMap</cite>).</li>
+<li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
+<li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the given geometries.</p>
 </td>
 </tr>
 </tbody>

@@ -12,6 +12,7 @@ LOCI is a Python library providing high-level functions for exploring, mining an
 - Generate heatmaps from POI locations.
 - Construct and visualize a grid structure over POI locations.
 - Compute and visualize POI clusters using density-based clustering.
+- Use LDA to extract and assign topics to clusters.
 
 #### Quick start
 
