@@ -45,7 +45,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
 ]
-autodoc_mock_imports = ['folium', 'shapely', 'geopandas', 'hdbscan', 'wordcloud', 'pysal', 'sklearn', 'pyLDAvis']
+autodoc_mock_imports = ['folium', 'shapely', 'geopandas', 'hdbscan', 'wordcloud', 'pysal', 'sklearn', 'pyLDAvis', 'mlxtend']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

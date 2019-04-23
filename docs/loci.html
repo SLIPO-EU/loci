@@ -184,20 +184,45 @@
 
 <dl class="function">
 <dt id="loci.analytics.filter_by_kwd">
-<code class="descclassname">loci.analytics.</code><code class="descname">filter_by_kwd</code><span class="sig-paren">(</span><em>gdf</em>, <em>kwd_filter</em>, <em>col_kwds='kwds'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/analytics.html#filter_by_kwd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.analytics.filter_by_kwd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a GeoDataFrame with only those rows that contain the specified keyword.</p>
+<code class="descclassname">loci.analytics.</code><code class="descname">filter_by_kwd</code><span class="sig-paren">(</span><em>df</em>, <em>kwd_filter</em>, <em>col_kwds='kwds'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/analytics.html#filter_by_kwd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.analytics.filter_by_kwd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame with only those rows that contain the specified keyword.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>gdf</strong> (<em>GeoDataFrame</em>) – The initial GeoDataFrame to be filtered.</li>
+<li><strong>df</strong> (<em>DataFrame</em>) – The initial DataFrame to be filtered.</li>
 <li><strong>kwd_filter</strong> (<em>string</em>) – The keyword to use for filtering.</li>
 <li><strong>col_kwds</strong> (<em>string</em>) – Name of the column containing the keywords (default: <cite>kwds</cite>).</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame with only those rows that contain <cite>kwd_filter</cite>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.analytics.freq_locationsets">
+<code class="descclassname">loci.analytics.</code><code class="descname">freq_locationsets</code><span class="sig-paren">(</span><em>location_visits</em>, <em>location_id_col</em>, <em>locations</em>, <em>locationset_id_col</em>, <em>min_sup</em>, <em>min_length</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/analytics.html#freq_locationsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.analytics.freq_locationsets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes frequently visited sets of locations based on frequent itemset mining.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>location_visits</strong> (<em>DataFrame</em>) – A DataFrame with location ids and locationset ids.</li>
+<li><strong>location_id_col</strong> (<em>String</em>) – The name of the column containing the location ids.</li>
+<li><strong>locationset_id_col</strong> (<em>String</em>) – The name of the column containing the locationsets ids.</li>
+<li><strong>locations</strong> (<em>GeoDataFrame</em>) – A GeoDataFrame containing the geometries of the locations.</li>
+<li><strong>min_sup</strong> (<em>float</em>) – The minimum support threshold.</li>
+<li><strong>min_length</strong> (<em>int</em>) – Minimum length of itemsets to be returned.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame with the support, length and geometry of the computed location sets.</p>
 </td>
 </tr>
 </tbody>
@@ -497,6 +522,29 @@ and contains the following columns:</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the given geometries.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.map_geometry">
+<code class="descclassname">loci.plots.</code><code class="descname">map_geometry</code><span class="sig-paren">(</span><em>geom</em>, <em>tiles='OpenStreetMap'</em>, <em>width='100%'</em>, <em>height='100%'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_geometry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Folium Map displaying the provided geometry. Map center and zoom level are set automatically.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>geom</strong> (<em>Shapely Geometry</em>) – A geometry to be displayed.</li>
+<li><strong>tiles</strong> (<em>string</em>) – The tiles to use for the map (default: <cite>OpenStreetMap</cite>).</li>
+<li><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</li>
+<li><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A Folium Map object displaying the given geometry.</p>
 </td>
 </tr>
 </tbody>

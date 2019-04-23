@@ -81,11 +81,7 @@ def freq_locationsets(location_visits, location_id_col, locations, locationset_i
              min_length (int): Minimum length of itemsets to be returned.
 
         Returns:
-            A GeoDataFrame with the following columns:
-                - `support`: The support of each returned locationset (float).
-                - `location_ids`: The location ids of the locationset (FrozenSet, immutable Set).
-                - `length`: The length of the locationset, i.e., the number of locations in it.
-                - `geometry`: The geometry of the locationset (GeometryCollection).
+            A GeoDataFrame with the support, length and geometry of the computed location sets.
     """
 
     itemsets = location_visits.groupby([locationset_id_col], sort=False)[location_id_col].agg(set)

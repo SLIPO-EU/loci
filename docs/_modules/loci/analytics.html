@@ -145,14 +145,18 @@
            <div itemprop="articleBody">
             
   <h1>Source code for loci.analytics</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">box</span>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">box</span><span class="p">,</span> <span class="n">GeometryCollection</span>
+<span class="kn">from</span> <span class="nn">mlxtend.preprocessing</span> <span class="k">import</span> <span class="n">TransactionEncoder</span>
+<span class="kn">from</span> <span class="nn">mlxtend.frequent_patterns</span> <span class="k">import</span> <span class="n">apriori</span>
 
 
-<div class="viewcode-block" id="filter_by_kwd"><a class="viewcode-back" href="../../loci.html#loci.analytics.filter_by_kwd">[docs]</a><span class="k">def</span> <span class="nf">filter_by_kwd</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">kwd_filter</span><span class="p">,</span> <span class="n">col_kwds</span><span class="o">=</span><span class="s1">&#39;kwds&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns a GeoDataFrame with only those rows that contain the specified keyword.</span>
+<div class="viewcode-block" id="filter_by_kwd"><a class="viewcode-back" href="../../loci.html#loci.analytics.filter_by_kwd">[docs]</a><span class="k">def</span> <span class="nf">filter_by_kwd</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">kwd_filter</span><span class="p">,</span> <span class="n">col_kwds</span><span class="o">=</span><span class="s1">&#39;kwds&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a DataFrame with only those rows that contain the specified keyword.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        gdf (GeoDataFrame): The initial GeoDataFrame to be filtered.</span>
+<span class="sd">        df (DataFrame): The initial DataFrame to be filtered.</span>
 <span class="sd">        kwd_filter (string): The keyword to use for filtering.</span>
 <span class="sd">        col_kwds (string): Name of the column containing the keywords (default: `kwds`).</span>
 
@@ -160,8 +164,8 @@
 <span class="sd">        A GeoDataFrame with only those rows that contain `kwd_filter`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">col_kwds</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">kwd_filter</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)</span>
-    <span class="n">filtered_gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col_kwds</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">kwd_filter</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)</span>
+    <span class="n">filtered_gdf</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">filtered_gdf</span></div>
 
@@ -210,6 +214,43 @@
             <span class="n">kwds_freq_dict</span><span class="p">[</span><span class="n">kwd</span><span class="p">]</span> <span class="o">=</span> <span class="n">freq</span> <span class="o">/</span> <span class="n">num_of_records</span>
 
     <span class="k">return</span> <span class="n">kwds_freq_dict</span></div>
+
+
+<div class="viewcode-block" id="freq_locationsets"><a class="viewcode-back" href="../../loci.html#loci.analytics.freq_locationsets">[docs]</a><span class="k">def</span> <span class="nf">freq_locationsets</span><span class="p">(</span><span class="n">location_visits</span><span class="p">,</span> <span class="n">location_id_col</span><span class="p">,</span> <span class="n">locations</span><span class="p">,</span> <span class="n">locationset_id_col</span><span class="p">,</span> <span class="n">min_sup</span><span class="p">,</span> <span class="n">min_length</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes frequently visited sets of locations based on frequent itemset mining.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">             location_visits (DataFrame): A DataFrame with location ids and locationset ids.</span>
+<span class="sd">             location_id_col (String): The name of the column containing the location ids.</span>
+<span class="sd">             locationset_id_col (String): The name of the column containing the locationsets ids.</span>
+<span class="sd">             locations (GeoDataFrame): A GeoDataFrame containing the geometries of the locations.</span>
+<span class="sd">             min_sup (float): The minimum support threshold.</span>
+<span class="sd">             min_length (int): Minimum length of itemsets to be returned.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A GeoDataFrame with the support, length and geometry of the computed location sets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">itemsets</span> <span class="o">=</span> <span class="n">location_visits</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">locationset_id_col</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="n">location_id_col</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+    <span class="n">te</span> <span class="o">=</span> <span class="n">TransactionEncoder</span><span class="p">()</span>
+    <span class="n">oht_ary</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">itemsets</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">itemsets</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sparse_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">SparseDataFrame</span><span class="p">(</span><span class="n">oht_ary</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">te</span><span class="o">.</span><span class="n">columns_</span><span class="p">,</span> <span class="n">default_fill_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">apriori_df</span> <span class="o">=</span> <span class="n">apriori</span><span class="p">(</span><span class="n">sparse_df</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="n">min_sup</span><span class="p">,</span> <span class="n">use_colnames</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">apriori_df</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">apriori_df</span><span class="p">[</span><span class="s1">&#39;itemsets&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="n">apriori_df</span> <span class="o">=</span> <span class="n">apriori_df</span><span class="p">[(</span><span class="n">apriori_df</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_length</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">cluster_id_to_geom</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+        <span class="n">polylist</span> <span class="o">=</span> <span class="p">[</span><span class="n">locations</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">geometry</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">row</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">GeometryCollection</span><span class="p">(</span><span class="n">polylist</span><span class="p">)</span>
+
+    <span class="n">apriori_df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">apriori_df</span><span class="p">[</span><span class="s1">&#39;itemsets&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">cluster_id_to_geom</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="n">apriori_df</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">apriori_df</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">locations</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">apriori_df</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
+    <span class="n">apriori_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;itemsets&#39;</span><span class="p">:</span> <span class="s1">&#39;location_ids&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">apriori_df</span></div>
 </pre></div>
 
            </div>
