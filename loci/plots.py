@@ -99,6 +99,27 @@ def map_geometries(gdf, tiles='OpenStreetMap', width='100%', height='100%'):
     return m
 
 
+def map_geometry(geom, tiles='OpenStreetMap', width='100%', height='100%'):
+    """Returns a Folium Map displaying the provided geometry. Map center and zoom level are set automatically.
+
+    Args:
+         geom (Shapely Geometry): A geometry to be displayed.
+         tiles (string): The tiles to use for the map (default: `OpenStreetMap`).
+         width (integer or percentage): Width of the map in pixels or percentage (default: 100%).
+         height (integer or percentage): Height of the map in pixels or percentage (default: 100%).
+
+    Returns:
+        A Folium Map object displaying the given geometry.
+    """
+
+    m = folium.Map(location=[geom.centroid.y, geom.centroid.x], tiles=tiles, width=width, height=height)
+    m.fit_bounds(([geom.bounds[1], geom.bounds[0]], [geom.bounds[3], geom.bounds[2]]))
+
+    folium.GeoJson(geom).add_to(m)
+
+    return m
+
+
 def barchart(data, orientation='Vertical', x_axis_label='', y_axis_label='', plot_title='', bar_width=0.5,
              plot_width=15, plot_height=5, top_k=10):
     """Plots a bar chart with the given data.

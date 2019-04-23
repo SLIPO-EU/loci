@@ -1,11 +1,15 @@
-from shapely.geometry import box
+import pandas as pd
+import geopandas as gpd
+from shapely.geometry import box, GeometryCollection
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori
 
 
-def filter_by_kwd(gdf, kwd_filter, col_kwds='kwds'):
-    """Returns a GeoDataFrame with only those rows that contain the specified keyword.
+def filter_by_kwd(df, kwd_filter, col_kwds='kwds'):
+    """Returns a DataFrame with only those rows that contain the specified keyword.
 
     Args:
-        gdf (GeoDataFrame): The initial GeoDataFrame to be filtered.
+        df (DataFrame): The initial DataFrame to be filtered.
         kwd_filter (string): The keyword to use for filtering.
         col_kwds (string): Name of the column containing the keywords (default: `kwds`).
 
@@ -13,8 +17,8 @@ def filter_by_kwd(gdf, kwd_filter, col_kwds='kwds'):
         A GeoDataFrame with only those rows that contain `kwd_filter`.
     """
 
-    mask = gdf[col_kwds].apply(lambda x: kwd_filter in x)
-    filtered_gdf = gdf[mask]
+    mask = df[col_kwds].apply(lambda x: kwd_filter in x)
+    filtered_gdf = df[mask]
 
     return filtered_gdf
 
@@ -63,3 +67,44 @@ def kwds_freq(gdf, col_kwds='kwds', normalized=False):
             kwds_freq_dict[kwd] = freq / num_of_records
 
     return kwds_freq_dict
+
+
+def freq_locationsets(location_visits, location_id_col, locations, locationset_id_col, min_sup, min_length):
+    """Computes frequently visited sets of locations based on frequent itemset mining.
+
+        Args:
+             location_visits (DataFrame): A DataFrame with location ids and locationset ids.
+             location_id_col (String): The name of the column containing the location ids.
+             locationset_id_col (String): The name of the column containing the locationsets ids.
+             locations (GeoDataFrame): A GeoDataFrame containing the geometries of the locations.
+             min_sup (float): The minimum support threshold.
+             min_length (int): Minimum length of itemsets to be returned.
+
+        Returns:
+            A GeoDataFrame with the following columns:
+                - `support`: The support of each returned locationset (float).
+                - `location_ids`: The location ids of the locationset (FrozenSet, immutable Set).
+                - `length`: The length of the locationset, i.e., the number of locations in it.
+                - `geometry`: The geometry of the locationset (GeometryCollection).
+    """
+
+    itemsets = location_visits.groupby([locationset_id_col], sort=False)[location_id_col].agg(set)
+    te = TransactionEncoder()
+    oht_ary = te.fit(itemsets).transform(itemsets.values, sparse=True)
+    sparse_df = pd.SparseDataFrame(oht_ary, columns=te.columns_, default_fill_value=False)
+
+    apriori_df = apriori(sparse_df, min_support=min_sup, use_colnames=True)
+    apriori_df['length'] = apriori_df['itemsets'].apply(lambda x: len(x))
+
+    apriori_df = apriori_df[(apriori_df['length'] >= min_length)]
+
+    def cluster_id_to_geom(row):
+        polylist = [locations.loc[c].geometry for c in row]
+        return GeometryCollection(polylist)
+
+    apriori_df['geometry'] = apriori_df['itemsets'].apply(lambda x: cluster_id_to_geom(x))
+
+    apriori_df = gpd.GeoDataFrame(apriori_df, crs=locations.crs, geometry=apriori_df.geometry)
+    apriori_df.rename(columns={'itemsets': 'location_ids'}, inplace=True)
+
+    return apriori_df
