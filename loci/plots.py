@@ -161,7 +161,7 @@ def barchart(data, orientation='Vertical', x_axis_label='', y_axis_label='', plo
         plt.bar(y_pos, performance, width=bar_width, align='center', alpha=0.5)
         plt.xticks(y_pos, objects)
     else:
-        plt.barh(y_pos, performance, width=bar_width, align='center', alpha=0.5)
+        plt.barh(y=y_pos, width=performance, align='center', alpha=0.5)
         plt.yticks(y_pos, objects)
 
     plt.xlabel(x_axis_label)
