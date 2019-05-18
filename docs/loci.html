@@ -257,8 +257,8 @@ by dividing with the number of rows in <cite>gdf</cite> (default: False).</li>
 <span id="loci-clustering-module"></span><h2>loci.clustering module<a class="headerlink" href="#module-loci.clustering" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="loci.clustering.compute_clusters">
-<code class="descclassname">loci.clustering.</code><code class="descname">compute_clusters</code><span class="sig-paren">(</span><em>pois</em>, <em>alg='hdbscan'</em>, <em>min_pts=None</em>, <em>eps=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/clustering.html#compute_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.clustering.compute_clusters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes clusters using the DBSCAN or the HDBSCAN algorithms.</p>
+<code class="descclassname">loci.clustering.</code><code class="descname">compute_clusters</code><span class="sig-paren">(</span><em>pois</em>, <em>alg='hdbscan'</em>, <em>min_pts=None</em>, <em>eps=None</em>, <em>cluster_shapes=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/clustering.html#compute_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.clustering.compute_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes clusters using the DBSCAN or the HDBSCAN algorithm.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -268,11 +268,12 @@ by dividing with the number of rows in <cite>gdf</cite> (default: False).</li>
 <li><strong>alg</strong> (<em>string</em>) – The clustering algorithm to use (dbscan or hdbscan; default: hdbscan).</li>
 <li><strong>min_pts</strong> (<em>integer</em>) – The minimum number of neighbors for a dense point.</li>
 <li><strong>eps</strong> (<em>float</em>) – The neighborhood radius.</li>
+<li><strong>cluster_shapes</strong> (<em>Boolean</em>) – Whether to return cluster shapes (default: True).</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A GeoDataFrame containing the clustered POIs and their labels, a GeoDataFrame containing the POIs that are
-not part of any cluster, and a GeoDataFrame containing the cluster borders.</p>
+not part of any cluster, and (optionally) a GeoDataFrame containing the cluster shapes.</p>
 </td>
 </tr>
 </tbody>
