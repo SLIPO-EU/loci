@@ -43,7 +43,7 @@ def map_points(pois, tiles='OpenStreetMap', width='100%', height='100%', show_bb
     coords, popups = [], []
     for idx, poi in pois.iterrows():
         coords.append([poi.geometry.y, poi.geometry.x])
-        label = poi['id'] + '<br>' + poi['name'] + '<br>' + ' '.join(poi['kwds'])
+        label = str(poi['id']) + '<br>' + str(poi['name']) + '<br>' + ' '.join(poi['kwds'])
         popups.append(folium.IFrame(label, width=300, height=100))
 
     poi_layer = folium.FeatureGroup(name='pois')
