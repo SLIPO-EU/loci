@@ -149,10 +149,11 @@
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">Point</span>
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">osmnx</span>
 
 
 <div class="viewcode-block" id="read_poi_csv"><a class="viewcode-back" href="../../loci.html#loci.io.read_poi_csv">[docs]</a><span class="k">def</span> <span class="nf">read_poi_csv</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">col_id</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">col_name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">col_lon</span><span class="o">=</span><span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="n">col_lat</span><span class="o">=</span><span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="n">col_kwds</span><span class="o">=</span><span class="s1">&#39;kwds&#39;</span><span class="p">,</span> <span class="n">col_sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span>
-                 <span class="n">kwds_sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">source_crs</span> <span class="o">=</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span> <span class="n">target_crs</span> <span class="o">=</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span> <span class="n">keep_other_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                 <span class="n">kwds_sep</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">source_crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span> <span class="n">target_crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">,</span> <span class="n">keep_other_cols</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Creates a POI GeoDataFrame from an input CSV file.</span>
 
 <span class="sd">    Args:</span>
@@ -217,11 +218,62 @@
 
     <span class="n">source_crs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">source_crs</span><span class="p">}</span>
     <span class="n">target_crs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="n">target_crs</span><span class="p">}</span>
-    <span class="n">pois</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">source_crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">target_crs</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">col_lon</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">])</span>
+    <span class="n">pois</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">source_crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">target_crs</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">col_lon</span><span class="p">,</span>
+                                                                                                              <span class="n">col_lat</span><span class="p">])</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loaded &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; POIs.&#39;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">pois</span></div>
+
+
+<div class="viewcode-block" id="retrieve_osm_pois"><a class="viewcode-back" href="../../loci.html#loci.io.retrieve_osm_pois">[docs]</a><span class="k">def</span> <span class="nf">retrieve_osm_pois</span><span class="p">(</span><span class="n">place</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieves POIs (amenities) from OpenStreetMap.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        place (string): A place name resolving to a location or administrative boundary in `OpenStreetMap`.</span>
+<span class="sd">        distance (numeric): distance in meters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A POI GeoDataFrame with columns `id`, `name` and `kwds`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># retrieve pois</span>
+    <span class="k">if</span> <span class="n">distance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pois</span> <span class="o">=</span> <span class="n">osmnx</span><span class="o">.</span><span class="n">pois</span><span class="o">.</span><span class="n">pois_from_place</span><span class="p">(</span><span class="n">place</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">place</span> <span class="o">=</span> <span class="n">osmnx</span><span class="o">.</span><span class="n">gdf_from_place</span><span class="p">(</span><span class="n">place</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+        <span class="n">place</span> <span class="o">=</span> <span class="p">(</span><span class="n">place</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">place</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">pois</span> <span class="o">=</span> <span class="n">osmnx</span><span class="o">.</span><span class="n">pois</span><span class="o">.</span><span class="n">pois_from_point</span><span class="p">(</span><span class="n">place</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># filter pois</span>
+        <span class="n">pois</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="n">pois</span><span class="o">.</span><span class="n">amenity</span><span class="o">.</span><span class="n">notnull</span><span class="p">()]</span>
+        <span class="n">pois_filter</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">element_type</span> <span class="o">==</span> <span class="s1">&#39;node&#39;</span>
+        <span class="n">pois</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="n">pois_filter</span><span class="p">]</span>
+
+        <span class="c1"># restructure gdf</span>
+        <span class="n">subset_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;osmid&#39;</span><span class="p">,</span> <span class="s1">&#39;amenity&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pois</span><span class="p">)</span>
+        <span class="n">drop_columns</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">subset_cols</span><span class="p">)</span>
+        <span class="n">pois</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">drop_columns</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">pois</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">pois</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;osmid&#39;</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;amenity&#39;</span><span class="p">:</span> <span class="s1">&#39;kwds&#39;</span><span class="p">})</span>
+        <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;kwds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;kwds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="p">[</span><span class="n">s</span><span class="p">])</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Loaded &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; POIs.&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pois</span></div>
+
+
+<div class="viewcode-block" id="to_geojson"><a class="viewcode-back" href="../../loci.html#loci.io.to_geojson">[docs]</a><span class="k">def</span> <span class="nf">to_geojson</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exports a GeoDataFrame to a GeoJSON file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        gdf (GeoDataFrame): The GeoDataFrame object to be exported.</span>
+<span class="sd">        output_file (string): Path to the output file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;GeoJSON&#39;</span><span class="p">)</span></div>
 </pre></div>
 
            </div>
