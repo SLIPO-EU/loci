@@ -16,7 +16,7 @@ import os
 import sys
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../..'))
-
+   
 
 # -- Project information -----------------------------------------------------
 
@@ -45,7 +45,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
 ]
-autodoc_mock_imports = ['folium', 'shapely', 'geopandas', 'hdbscan', 'wordcloud', 'pysal', 'sklearn', 'pyLDAvis', 'mlxtend']
+autodoc_mock_imports = ['pandas', 'numpy', 'scipy', 'matplotlib', 'folium', 'shapely', 'geopandas', 'hdbscan', 'wordcloud', 'pysal', 'sklearn', 'pyLDAvis', 'mlxtend', 'osmnx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

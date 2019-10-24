@@ -2,10 +2,11 @@ import pandas as pd
 from shapely.geometry import Point
 import geopandas as gpd
 import math
+import osmnx
 
 
 def read_poi_csv(input_file, col_id='id', col_name='name', col_lon='lon', col_lat='lat', col_kwds='kwds', col_sep=';',
-                 kwds_sep=',', source_crs = 'EPSG:4326', target_crs = 'EPSG:4326', keep_other_cols=False):
+                 kwds_sep=',', source_crs='EPSG:4326', target_crs='EPSG:4326', keep_other_cols=False):
     """Creates a POI GeoDataFrame from an input CSV file.
 
     Args:
@@ -70,8 +71,59 @@ def read_poi_csv(input_file, col_id='id', col_name='name', col_lon='lon', col_la
 
     source_crs = {'init': source_crs}
     target_crs = {'init': target_crs}
-    pois = gpd.GeoDataFrame(pois, crs=source_crs, geometry=pois['geometry']).to_crs(target_crs).drop(columns=[col_lon, col_lat])
+    pois = gpd.GeoDataFrame(pois, crs=source_crs, geometry=pois['geometry']).to_crs(target_crs).drop(columns=[col_lon,
+                                                                                                              col_lat])
 
     print('Loaded ' + str(len(pois.index)) + ' POIs.')
 
     return pois
+
+
+def retrieve_osm_pois(place, distance=None):
+    """Retrieves POIs (amenities) from OpenStreetMap.
+
+    Args:
+        place (string): A place name resolving to a location or administrative boundary in `OpenStreetMap`.
+        distance (numeric): distance in meters.
+
+    Returns:
+        A POI GeoDataFrame with columns `id`, `name` and `kwds`.
+    """
+
+    # retrieve pois
+    if distance is None:
+        pois = osmnx.pois.pois_from_place(place)
+    else:
+        place = osmnx.gdf_from_place(place).iloc[0]['geometry']
+        place = (place.y, place.x)
+        pois = osmnx.pois.pois_from_point(place, distance)
+
+    if len(pois.index) > 0:
+        # filter pois
+        pois = pois[pois.amenity.notnull()]
+        pois_filter = pois.element_type == 'node'
+        pois = pois[pois_filter]
+
+        # restructure gdf
+        subset_cols = ['osmid', 'amenity', 'name', 'geometry']
+        columns = list(pois)
+        drop_columns = set(columns) - set(subset_cols)
+        pois.drop(drop_columns, inplace=True, axis=1)
+        pois = pois.reset_index(drop=True)
+        pois = pois.rename(columns={'osmid': 'id', 'amenity': 'kwds'})
+        pois['kwds'] = pois['kwds'].map(lambda s: [s])
+
+    print('Loaded ' + str(len(pois.index)) + ' POIs.')
+
+    return pois
+
+
+def to_geojson(gdf, output_file):
+    """Exports a GeoDataFrame to a GeoJSON file.
+
+    Args:
+        gdf (GeoDataFrame): The GeoDataFrame object to be exported.
+        output_file (string): Path to the output file.
+    """
+
+    gdf.to_file(output_file, driver='GeoJSON')
