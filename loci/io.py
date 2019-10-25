@@ -79,24 +79,19 @@ def read_poi_csv(input_file, col_id='id', col_name='name', col_lon='lon', col_la
     return pois
 
 
-def retrieve_osm_pois(place, distance=None):
-    """Retrieves POIs (amenities) from OpenStreetMap.
+def import_osmnx(bound, target_crs='EPSG:4326'):
+    """Creates a POI GeoDataFrame from POIs retrieved by OSMNX (https://github.com/gboeing/osmnx).
 
     Args:
-        place (string): A place name resolving to a location or administrative boundary in `OpenStreetMap`.
-        distance (numeric): distance in meters.
+        bound (polygon): A polygon to be used as filter.
+        target_crs (string): Coordinate Reference System of the GeoDataFrame to be created (default: `EPSG:4326`).
 
     Returns:
         A POI GeoDataFrame with columns `id`, `name` and `kwds`.
     """
 
     # retrieve pois
-    if distance is None:
-        pois = osmnx.pois.pois_from_place(place)
-    else:
-        place = osmnx.gdf_from_place(place).iloc[0]['geometry']
-        place = (place.y, place.x)
-        pois = osmnx.pois.pois_from_point(place, distance)
+    pois = osmnx.pois.pois_from_polygon(bound)
 
     if len(pois.index) > 0:
         # filter pois
@@ -113,9 +108,105 @@ def retrieve_osm_pois(place, distance=None):
         pois = pois.rename(columns={'osmid': 'id', 'amenity': 'kwds'})
         pois['kwds'] = pois['kwds'].map(lambda s: [s])
 
+    if target_crs != 'EPSG:4326':
+        target_crs = {'init': target_crs}
+        pois = pois.to_crs(target_crs)
+
     print('Loaded ' + str(len(pois.index)) + ' POIs.')
 
     return pois
+
+
+def import_osmwrangle(osmwrangle_file, target_crs='EPSG:4326', bound=None):
+    """Creates a POI GeoDataFrame from a file produced by OSMWrangle (https://github.com/SLIPO-EU/OSMWrangle).
+
+    Args:
+        osmwrangle_file (string): Path to the input csv file.
+        target_crs (string): Coordinate Reference System of the GeoDataFrame to be created (default: `EPSG:4326`).
+        bound (polygon): A polygon to be used as filter.
+
+    Returns:
+        A POI GeoDataFrame with columns `id`, `name` and `kwds`.
+    """
+
+    col_sep = '|'
+    col_id = 'ID'
+    col_lon = 'LON'
+    col_lat = 'LAT'
+    col_name = 'NAME'
+    col_cat = 'CATEGORY'
+    col_subcat = 'SUBCATEGORY'
+    source_crs = {'init': 'EPSG:4326'}
+
+    def lon_lat_to_point(row, c_lon, c_lat):
+        try:
+            x_lon = float(row[c_lon])
+            y_lat = float(row[c_lat])
+            if math.isnan(x_lon) is False and math.isnan(y_lat) is False:
+                return Point(x_lon, y_lat)
+            else:
+                return float('NaN')
+        except:
+            return float('NaN')
+
+    pois = pd.read_csv(osmwrangle_file, delimiter=col_sep, error_bad_lines=False)
+    init_poi_size = pois.index.size
+
+    columns = list(pois)
+
+    subset_cols = [col_id, col_name, 'kwds', col_lon, col_lat]
+
+    # Geometry Column(Uncleaned)
+    pois['geometry'] = pois.apply(lambda row: lon_lat_to_point(row, col_lon, col_lat), axis=1)
+    subset_cols.append('geometry')
+
+    # Drop all N/A, Null rows from DataFrame.
+    pois.dropna(inplace=True)
+    if init_poi_size - pois.index.size > 0:
+        print("Skipped", (init_poi_size - pois.index.size), "rows due to errors.")
+
+    pois['kwds'] = pois[col_cat] + ',' + pois[col_subcat]
+    pois['kwds'] = pois['kwds'].map(lambda s: s.split(','))
+
+    # Drop Columns Not in subset Columns.
+    drop_columns = set(columns) - set(subset_cols)
+    pois.drop(drop_columns, inplace=True, axis=1)
+
+    pois = pois.rename(columns={col_id: 'id', col_name: 'name'})
+    pois = gpd.GeoDataFrame(pois, crs=source_crs, geometry=pois['geometry']).drop(columns=[col_lon, col_lat])
+
+    # Check whether location filter should be applied
+    if bound is not None:
+        spatial_filter = pois.geometry.intersects(bound)
+        pois = pois[spatial_filter]
+
+    if target_crs != 'EPSG:4326':
+        target_crs = {'init': target_crs}
+        pois = pois.to_crs(target_crs)
+
+    print('Loaded ' + str(len(pois.index)) + ' POIs.')
+
+    return pois
+
+
+def retrieve_osm_loc(name, buffer_dist=0):
+    """Retrieves a polygon from an OSM location.
+
+    Args:
+         name (string): Name of the location to be resolved.
+         buffer_dist (numeric): Buffer distance in meters.
+
+    Returns:
+        A polygon.
+    """
+
+    geom = osmnx.core.gdf_from_place(name, buffer_dist=buffer_dist)
+    if len(geom.index) > 0:
+        geom = geom.iloc[0].geometry
+    else:
+        geom = None
+
+    return geom
 
 
 def to_geojson(gdf, output_file):
