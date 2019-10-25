@@ -337,6 +337,41 @@ and contains the following columns:</p>
 <div class="section" id="module-loci.io">
 <span id="loci-io-module"></span><h2>loci.io module<a class="headerlink" href="#module-loci.io" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
+<dt id="loci.io.import_osmnx">
+<code class="sig-prename descclassname">loci.io.</code><code class="sig-name descname">import_osmnx</code><span class="sig-paren">(</span><em class="sig-param">bound</em>, <em class="sig-param">target_crs='EPSG:4326'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/io.html#import_osmnx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.io.import_osmnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a POI GeoDataFrame from POIs retrieved by OSMNX (<a class="reference external" href="https://github.com/gboeing/osmnx">https://github.com/gboeing/osmnx</a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bound</strong> (<em>polygon</em>) – A polygon to be used as filter.</p></li>
+<li><p><strong>target_crs</strong> (<em>string</em>) – Coordinate Reference System of the GeoDataFrame to be created (default: <cite>EPSG:4326</cite>).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A POI GeoDataFrame with columns <cite>id</cite>, <cite>name</cite> and <cite>kwds</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.io.import_osmwrangle">
+<code class="sig-prename descclassname">loci.io.</code><code class="sig-name descname">import_osmwrangle</code><span class="sig-paren">(</span><em class="sig-param">osmwrangle_file</em>, <em class="sig-param">target_crs='EPSG:4326'</em>, <em class="sig-param">bound=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/io.html#import_osmwrangle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.io.import_osmwrangle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a POI GeoDataFrame from a file produced by OSMWrangle (<a class="reference external" href="https://github.com/SLIPO-EU/OSMWrangle">https://github.com/SLIPO-EU/OSMWrangle</a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>osmwrangle_file</strong> (<em>string</em>) – Path to the input csv file.</p></li>
+<li><p><strong>target_crs</strong> (<em>string</em>) – Coordinate Reference System of the GeoDataFrame to be created (default: <cite>EPSG:4326</cite>).</p></li>
+<li><p><strong>bound</strong> (<em>polygon</em>) – A polygon to be used as filter.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A POI GeoDataFrame with columns <cite>id</cite>, <cite>name</cite> and <cite>kwds</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="loci.io.read_poi_csv">
 <code class="sig-prename descclassname">loci.io.</code><code class="sig-name descname">read_poi_csv</code><span class="sig-paren">(</span><em class="sig-param">input_file</em>, <em class="sig-param">col_id='id'</em>, <em class="sig-param">col_name='name'</em>, <em class="sig-param">col_lon='lon'</em>, <em class="sig-param">col_lat='lat'</em>, <em class="sig-param">col_kwds='kwds'</em>, <em class="sig-param">col_sep=';'</em>, <em class="sig-param">kwds_sep='</em>, <em class="sig-param">'</em>, <em class="sig-param">source_crs='EPSG:4326'</em>, <em class="sig-param">target_crs='EPSG:4326'</em>, <em class="sig-param">keep_other_cols=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/io.html#read_poi_csv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.io.read_poi_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a POI GeoDataFrame from an input CSV file.</p>
@@ -363,18 +398,18 @@ and contains the following columns:</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="loci.io.retrieve_osm_pois">
-<code class="sig-prename descclassname">loci.io.</code><code class="sig-name descname">retrieve_osm_pois</code><span class="sig-paren">(</span><em class="sig-param">place</em>, <em class="sig-param">distance=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/io.html#retrieve_osm_pois"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.io.retrieve_osm_pois" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves POIs (amenities) from OpenStreetMap.</p>
+<dt id="loci.io.retrieve_osm_loc">
+<code class="sig-prename descclassname">loci.io.</code><code class="sig-name descname">retrieve_osm_loc</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">buffer_dist=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/io.html#retrieve_osm_loc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.io.retrieve_osm_loc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves a polygon from an OSM location.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>place</strong> (<em>string</em>) – A place name resolving to a location or administrative boundary in <cite>OpenStreetMap</cite>.</p></li>
-<li><p><strong>distance</strong> (<em>numeric</em>) – distance in meters.</p></li>
+<li><p><strong>name</strong> (<em>string</em>) – Name of the location to be resolved.</p></li>
+<li><p><strong>buffer_dist</strong> (<em>numeric</em>) – Buffer distance in meters.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A POI GeoDataFrame with columns <cite>id</cite>, <cite>name</cite> and <cite>kwds</cite>.</p>
+<dd class="field-even"><p>A polygon.</p>
 </dd>
 </dl>
 </dd></dl>
