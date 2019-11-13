@@ -17,7 +17,7 @@ def filter_by_kwd(df, kwd_filter, col_kwds='kwds'):
         A GeoDataFrame with only those rows that contain `kwd_filter`.
     """
 
-    mask = df[col_kwds].apply(lambda x: kwd_filter in x)
+    mask = df[col_kwds].apply(lambda x: kwd_filter.lower() in [y.lower() for y in x])
     filtered_gdf = df[mask]
 
     return filtered_gdf

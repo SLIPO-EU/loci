@@ -3,6 +3,9 @@ from shapely.geometry import Point
 import geopandas as gpd
 import math
 import osmnx
+import requests
+from io import BytesIO
+from zipfile import ZipFile
 
 
 def read_poi_csv(input_file, col_id='id', col_name='name', col_lon='lon', col_lat='lat', col_kwds='kwds', col_sep=';',
@@ -121,13 +124,21 @@ def import_osmwrangle(osmwrangle_file, target_crs='EPSG:4326', bound=None):
     """Creates a POI GeoDataFrame from a file produced by OSMWrangle (https://github.com/SLIPO-EU/OSMWrangle).
 
     Args:
-        osmwrangle_file (string): Path to the input csv file.
+        osmwrangle_file (string): Path or URL to the input csv file.
         target_crs (string): Coordinate Reference System of the GeoDataFrame to be created (default: `EPSG:4326`).
         bound (polygon): A polygon to be used as filter.
 
     Returns:
         A POI GeoDataFrame with columns `id`, `name` and `kwds`.
     """
+
+    def lon_lat_to_point(row, c_lon, c_lat):
+        x_lon = float(row[c_lon])
+        y_lat = float(row[c_lat])
+        if math.isnan(x_lon) is False and math.isnan(y_lat) is False:
+            return Point(x_lon, y_lat)
+        else:
+            return float('NaN')
 
     col_sep = '|'
     col_id = 'ID'
@@ -138,18 +149,15 @@ def import_osmwrangle(osmwrangle_file, target_crs='EPSG:4326', bound=None):
     col_subcat = 'SUBCATEGORY'
     source_crs = {'init': 'EPSG:4326'}
 
-    def lon_lat_to_point(row, c_lon, c_lat):
-        try:
-            x_lon = float(row[c_lon])
-            y_lat = float(row[c_lat])
-            if math.isnan(x_lon) is False and math.isnan(y_lat) is False:
-                return Point(x_lon, y_lat)
-            else:
-                return float('NaN')
-        except:
-            return float('NaN')
+    # Load the file
+    if osmwrangle_file.startswith('http') and osmwrangle_file.endswith('.zip'):
+        response = requests.get(osmwrangle_file)
+        zip_file = ZipFile(BytesIO(response.content))
+        with zip_file.open(zip_file.namelist()[0]) as csvfile:
+            pois = pd.read_csv(csvfile, delimiter=col_sep, error_bad_lines=False)
+    else:
+        pois = pd.read_csv(osmwrangle_file, delimiter=col_sep, error_bad_lines=False)
 
-    pois = pd.read_csv(osmwrangle_file, delimiter=col_sep, error_bad_lines=False)
     init_poi_size = pois.index.size
 
     columns = list(pois)
@@ -160,17 +168,17 @@ def import_osmwrangle(osmwrangle_file, target_crs='EPSG:4326', bound=None):
     pois['geometry'] = pois.apply(lambda row: lon_lat_to_point(row, col_lon, col_lat), axis=1)
     subset_cols.append('geometry')
 
-    # Drop all N/A, Null rows from DataFrame.
-    pois.dropna(inplace=True)
-    if init_poi_size - pois.index.size > 0:
-        print("Skipped", (init_poi_size - pois.index.size), "rows due to errors.")
-
     pois['kwds'] = pois[col_cat] + ',' + pois[col_subcat]
     pois['kwds'] = pois['kwds'].map(lambda s: s.split(','))
 
     # Drop Columns Not in subset Columns.
     drop_columns = set(columns) - set(subset_cols)
     pois.drop(drop_columns, inplace=True, axis=1)
+
+    # Drop all N/A, Null rows from DataFrame.
+    pois.dropna(inplace=True)
+    if init_poi_size - pois.index.size > 0:
+        print("Skipped", (init_poi_size - pois.index.size), "rows due to errors.")
 
     pois = pois.rename(columns={col_id: 'id', col_name: 'name'})
     pois = gpd.GeoDataFrame(pois, crs=source_crs, geometry=pois['geometry']).drop(columns=[col_lon, col_lat])
