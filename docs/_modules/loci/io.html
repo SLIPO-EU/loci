@@ -150,6 +150,9 @@
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">osmnx</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="n">BytesIO</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="k">import</span> <span class="n">ZipFile</span>
 
 
 <div class="viewcode-block" id="read_poi_csv"><a class="viewcode-back" href="../../loci.html#loci.io.read_poi_csv">[docs]</a><span class="k">def</span> <span class="nf">read_poi_csv</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">col_id</span><span class="o">=</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">col_name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">col_lon</span><span class="o">=</span><span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="n">col_lat</span><span class="o">=</span><span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="n">col_kwds</span><span class="o">=</span><span class="s1">&#39;kwds&#39;</span><span class="p">,</span> <span class="n">col_sep</span><span class="o">=</span><span class="s1">&#39;;&#39;</span><span class="p">,</span>
@@ -268,13 +271,21 @@
     <span class="sd">&quot;&quot;&quot;Creates a POI GeoDataFrame from a file produced by OSMWrangle (https://github.com/SLIPO-EU/OSMWrangle).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        osmwrangle_file (string): Path to the input csv file.</span>
+<span class="sd">        osmwrangle_file (string): Path or URL to the input csv file.</span>
 <span class="sd">        target_crs (string): Coordinate Reference System of the GeoDataFrame to be created (default: `EPSG:4326`).</span>
 <span class="sd">        bound (polygon): A polygon to be used as filter.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A POI GeoDataFrame with columns `id`, `name` and `kwds`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">lon_lat_to_point</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">c_lon</span><span class="p">,</span> <span class="n">c_lat</span><span class="p">):</span>
+        <span class="n">x_lon</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">c_lon</span><span class="p">])</span>
+        <span class="n">y_lat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">c_lat</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x_lon</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y_lat</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Point</span><span class="p">(</span><span class="n">x_lon</span><span class="p">,</span> <span class="n">y_lat</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;NaN&#39;</span><span class="p">)</span>
 
     <span class="n">col_sep</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span>
     <span class="n">col_id</span> <span class="o">=</span> <span class="s1">&#39;ID&#39;</span>
@@ -285,18 +296,15 @@
     <span class="n">col_subcat</span> <span class="o">=</span> <span class="s1">&#39;SUBCATEGORY&#39;</span>
     <span class="n">source_crs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init&#39;</span><span class="p">:</span> <span class="s1">&#39;EPSG:4326&#39;</span><span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">lon_lat_to_point</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">c_lon</span><span class="p">,</span> <span class="n">c_lat</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">x_lon</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">c_lon</span><span class="p">])</span>
-            <span class="n">y_lat</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">c_lat</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x_lon</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">y_lat</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">Point</span><span class="p">(</span><span class="n">x_lon</span><span class="p">,</span> <span class="n">y_lat</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;NaN&#39;</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;NaN&#39;</span><span class="p">)</span>
+    <span class="c1"># Load the file</span>
+    <span class="k">if</span> <span class="n">osmwrangle_file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;http&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">osmwrangle_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.zip&#39;</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">osmwrangle_file</span><span class="p">)</span>
+        <span class="n">zip_file</span> <span class="o">=</span> <span class="n">ZipFile</span><span class="p">(</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">zip_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">zip_file</span><span class="o">.</span><span class="n">namelist</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">:</span>
+            <span class="n">pois</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csvfile</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">col_sep</span><span class="p">,</span> <span class="n">error_bad_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pois</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">osmwrangle_file</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">col_sep</span><span class="p">,</span> <span class="n">error_bad_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="n">pois</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">osmwrangle_file</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">col_sep</span><span class="p">,</span> <span class="n">error_bad_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">init_poi_size</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span>
 
     <span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pois</span><span class="p">)</span>
@@ -307,17 +315,17 @@
     <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">lon_lat_to_point</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col_lon</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">subset_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;geometry&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Drop all N/A, Null rows from DataFrame.</span>
-    <span class="n">pois</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">init_poi_size</span> <span class="o">-</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Skipped&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">init_poi_size</span> <span class="o">-</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="s2">&quot;rows due to errors.&quot;</span><span class="p">)</span>
-
     <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;kwds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="n">col_cat</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span> <span class="o">+</span> <span class="n">pois</span><span class="p">[</span><span class="n">col_subcat</span><span class="p">]</span>
     <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;kwds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pois</span><span class="p">[</span><span class="s1">&#39;kwds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span>
 
     <span class="c1"># Drop Columns Not in subset Columns.</span>
     <span class="n">drop_columns</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">subset_cols</span><span class="p">)</span>
     <span class="n">pois</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">drop_columns</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Drop all N/A, Null rows from DataFrame.</span>
+    <span class="n">pois</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">init_poi_size</span> <span class="o">-</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Skipped&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">init_poi_size</span> <span class="o">-</span> <span class="n">pois</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span><span class="p">),</span> <span class="s2">&quot;rows due to errors.&quot;</span><span class="p">)</span>
 
     <span class="n">pois</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">col_id</span><span class="p">:</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">col_name</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">})</span>
     <span class="n">pois</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">source_crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="n">pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">col_lon</span><span class="p">,</span> <span class="n">col_lat</span><span class="p">])</span>

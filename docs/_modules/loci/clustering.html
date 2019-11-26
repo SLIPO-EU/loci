@@ -145,28 +145,32 @@
            <div itemprop="articleBody">
             
   <h1>Source code for loci.clustering</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">merge</span>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">geopandas</span>
+
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="k">import</span> <span class="n">merge</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">time</span>
 <span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">DBSCAN</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="k">import</span> <span class="n">cascaded_union</span>
 <span class="kn">from</span> <span class="nn">geopandas</span> <span class="k">import</span> <span class="n">GeoDataFrame</span>
 <span class="kn">from</span> <span class="nn">hdbscan</span> <span class="k">import</span> <span class="n">HDBSCAN</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="k">import</span> <span class="n">MultiPoint</span>
 
 
-<div class="viewcode-block" id="compute_clusters"><a class="viewcode-back" href="../../loci.html#loci.clustering.compute_clusters">[docs]</a><span class="k">def</span> <span class="nf">compute_clusters</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;hdbscan&#39;</span><span class="p">,</span> <span class="n">min_pts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cluster_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_clusters"><a class="viewcode-back" href="../../loci.html#loci.clustering.compute_clusters">[docs]</a><span class="k">def</span> <span class="nf">compute_clusters</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="s1">&#39;dbscan&#39;</span><span class="p">,</span> <span class="n">min_pts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Computes clusters using the DBSCAN or the HDBSCAN algorithm.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">         pois (GeoDataFrame): A POI GeoDataFrame.</span>
-<span class="sd">         alg (string): The clustering algorithm to use (dbscan or hdbscan; default: hdbscan).</span>
+<span class="sd">         alg (string): The clustering algorithm to use (dbscan or hdbscan; default: dbscan).</span>
 <span class="sd">         min_pts (integer): The minimum number of neighbors for a dense point.</span>
 <span class="sd">         eps (float): The neighborhood radius.</span>
-<span class="sd">         cluster_shapes (Boolean): Whether to return cluster shapes (default: True).</span>
+<span class="sd">         n_jobs (integer): Number of parallel jobs to run in the algorithm (default: 1)</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">          A GeoDataFrame containing the clustered POIs and their labels, a GeoDataFrame containing the POIs that are</span>
-<span class="sd">          not part of any cluster, and (optionally) a GeoDataFrame containing the cluster shapes.</span>
+<span class="sd">          A GeoDataFrame containing the clustered POIs and their labels. The value of parameter `eps` for each cluster</span>
+<span class="sd">          is also returned (which varies in the case of HDBSCAN).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Prepare list of coordinates</span>
@@ -177,7 +181,7 @@
     <span class="c1"># Compute the clusters</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">alg</span> <span class="o">==</span> <span class="s1">&#39;hdbscan&#39;</span><span class="p">:</span>
-        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">HDBSCAN</span><span class="p">(</span><span class="n">min_cluster_size</span><span class="o">=</span><span class="n">min_pts</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_pts</span><span class="p">)</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">HDBSCAN</span><span class="p">(</span><span class="n">min_cluster_size</span><span class="o">=</span><span class="n">min_pts</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_pts</span><span class="p">,</span> <span class="n">core_dist_n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">clusterer</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">data_arr</span><span class="p">)</span>
         <span class="n">num_of_clusters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
 
@@ -185,12 +189,13 @@
         <span class="n">cluster_tree</span> <span class="o">=</span> <span class="n">tree</span><span class="p">[</span><span class="n">tree</span><span class="o">.</span><span class="n">child_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
         <span class="n">chosen_clusters</span> <span class="o">=</span> <span class="n">clusterer</span><span class="o">.</span><span class="n">condensed_tree_</span><span class="o">.</span><span class="n">_select_clusters</span><span class="p">()</span>
 
-        <span class="n">cluster_tree_chosen</span> <span class="o">=</span> <span class="n">cluster_tree</span><span class="p">[</span><span class="n">cluster_tree</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">chosen_clusters</span><span class="p">)]</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;parent&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;child&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">cluster_tree_chosen</span><span class="p">[</span><span class="s1">&#39;lambda_val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster_tree_chosen</span><span class="p">[</span><span class="s1">&#39;lambda_val&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">x</span><span class="p">)</span>
-        <span class="n">cluster_tree_chosen</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;lambda_val&#39;</span><span class="p">:</span> <span class="s1">&#39;eps&#39;</span><span class="p">,</span> <span class="s1">&#39;child_size&#39;</span><span class="p">:</span> <span class="s1">&#39;cluster_size&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">eps_per_cluster</span> <span class="o">=</span> <span class="n">cluster_tree</span><span class="p">[</span><span class="n">cluster_tree</span><span class="o">.</span><span class="n">child</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">chosen_clusters</span><span class="p">)]</span><span class="o">.</span>\
+            <span class="n">drop</span><span class="p">(</span><span class="s2">&quot;parent&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;child&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">eps_per_cluster</span><span class="p">[</span><span class="s1">&#39;lambda_val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eps_per_cluster</span><span class="p">[</span><span class="s1">&#39;lambda_val&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">x</span><span class="p">)</span>
+        <span class="n">eps_per_cluster</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;lambda_val&#39;</span><span class="p">:</span> <span class="s1">&#39;eps&#39;</span><span class="p">,</span> <span class="s1">&#39;child_size&#39;</span><span class="p">:</span> <span class="s1">&#39;cluster_size&#39;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_pts</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_arr</span><span class="p">)</span>
+        <span class="n">clusterer</span> <span class="o">=</span> <span class="n">DBSCAN</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">min_samples</span><span class="o">=</span><span class="n">min_pts</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_arr</span><span class="p">)</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">clusterer</span><span class="o">.</span><span class="n">labels_</span>
 
         <span class="n">num_of_clusters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
@@ -198,8 +203,8 @@
         <span class="n">num_of_clusters_no_noise</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">num_of_clusters_no_noise</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_of_clusters_no_noise</span><span class="p">)</span>
 
-        <span class="n">cluster_tree_chosen</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;eps&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">eps</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_of_clusters_no_noise</span><span class="p">})</span>
-        <span class="n">cluster_tree_chosen</span><span class="p">[</span><span class="s1">&#39;cluster_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">eps_per_cluster</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;eps&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">eps</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_of_clusters_no_noise</span><span class="p">})</span>
+        <span class="n">eps_per_cluster</span><span class="p">[</span><span class="s1">&#39;cluster_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done in </span><span class="si">%0.3f</span><span class="s2">s.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
 
@@ -214,11 +219,26 @@
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of clustered POIs: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pois_in_clusters</span><span class="p">)))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of outlier POIs: </span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pois_noise</span><span class="p">)))</span>
 
-    <span class="n">cluster_borders</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">cluster_shapes</span><span class="p">:</span>
-        <span class="c1"># Compute cluster shapes</span>
-        <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">pois_in_clusters</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
-        <span class="n">join_df</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span><span class="n">cluster_borders</span><span class="p">,</span> <span class="n">cluster_tree_chosen</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pois_in_clusters</span><span class="p">,</span> <span class="n">eps_per_cluster</span></div>
+
+
+<div class="viewcode-block" id="cluster_shapes"><a class="viewcode-back" href="../../loci.html#loci.clustering.cluster_shapes">[docs]</a><span class="k">def</span> <span class="nf">cluster_shapes</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">shape_type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">eps_per_cluster</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes cluster shapes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">         pois (GeoDataFrame): The clustered POIs.</span>
+<span class="sd">         shape_type (integer): The methods to use for computing cluster shapes (allowed values: 1-3).</span>
+<span class="sd">         eps_per_cluster (DataFrame): The value of parameter eps used for each cluster (required by methods 2 and 3).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">          A GeoDataFrame containing the cluster shapes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">shape_type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
+        <span class="n">join_df</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span><span class="n">cluster_borders</span><span class="p">,</span> <span class="n">eps_per_cluster</span><span class="p">,</span> <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
         <span class="n">cluster_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">join_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
             <span class="n">eps</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span>
@@ -229,13 +249,76 @@
             <span class="n">cluster_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cascaded_union</span><span class="p">(</span><span class="n">cluster_i</span><span class="p">))</span>
 
         <span class="n">join_df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster_list</span>
+        <span class="n">join_df</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">join_df</span><span class="o">.</span><span class="n">index</span>
         <span class="n">join_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">join_df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="s1">&#39;cluster_size&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">join_df</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">pois</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">)</span>
-        <span class="n">cluster_borders</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster_borders</span><span class="o">.</span><span class="n">index</span>
+        <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">cluster_borders</span><span class="p">[[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]]</span>
 
-    <span class="k">return</span> <span class="n">pois_in_clusters</span><span class="p">,</span> <span class="n">pois_noise</span><span class="p">,</span> <span class="n">cluster_borders</span></div>
+    <span class="k">elif</span> <span class="n">shape_type</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">eps_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">eps_per_cluster</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">eps_dict</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span>
+
+        <span class="n">circles_from_pois</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">cid_size_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">circles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">circles_from_pois</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">cid</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]</span>
+            <span class="n">circles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">eps_dict</span><span class="p">[</span><span class="n">cid</span><span class="p">]))</span>
+            <span class="n">cid_size_dict</span><span class="p">[</span><span class="n">cid</span><span class="p">]</span> <span class="o">=</span> <span class="n">cid_size_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">circles_from_pois</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">circles</span>
+
+        <span class="n">s_index</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">sindex</span>
+
+        <span class="n">pois_in_circles</span> <span class="o">=</span> <span class="n">geopandas</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span><span class="n">pois</span><span class="p">,</span> <span class="n">circles_from_pois</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="s1">&#39;intersects&#39;</span><span class="p">)</span>
+        <span class="n">agged_pois_per_circle</span> <span class="o">=</span> <span class="n">pois_in_circles</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;cluster_id_left&#39;</span><span class="p">,</span> <span class="s1">&#39;index_right&#39;</span><span class="p">],</span>
+                                                        <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">list</span><span class="p">])</span>
+
+        <span class="n">poly_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cluster_id_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">agged_pois_per_circle</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">pois_in_circle</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">]</span>
+            <span class="n">lsize</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pois_in_circle</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">lsize</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">poly</span> <span class="o">=</span> <span class="n">MultiPoint</span><span class="p">(</span><span class="n">pois_in_circle</span><span class="p">)</span><span class="o">.</span><span class="n">convex_hull</span>
+                <span class="n">poly_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">poly</span><span class="p">)</span>
+                <span class="n">cluster_id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">temp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+            <span class="s1">&#39;cluster_id&#39;</span><span class="p">:</span> <span class="n">cluster_id_list</span><span class="p">,</span>
+            <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">poly_list</span>
+        <span class="p">})</span>
+
+        <span class="n">grouped_poly_per_cluster</span> <span class="o">=</span> <span class="n">temp_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">list</span><span class="p">])</span>
+
+        <span class="n">cluster_size_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">poly_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">grouped_poly_per_cluster</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">poly_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cascaded_union</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">]))</span>
+            <span class="n">cluster_size_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cid_size_dict</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+
+        <span class="n">grouped_poly_per_cluster</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">poly_list</span>
+        <span class="n">grouped_poly_per_cluster</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;list&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">grouped_poly_per_cluster</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">pois</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">)</span>
+        <span class="n">cluster_borders</span><span class="p">[</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster_borders</span><span class="o">.</span><span class="n">index</span>
+        <span class="n">cluster_borders</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster_size_list</span>
+
+    <span class="c1"># type == 1 (default)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">pois</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;cluster_id&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
+        <span class="n">cluster_borders</span><span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">MultiPoint</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">.</span><span class="n">convex_hull</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">cluster_borders</span><span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">]]</span>
+        <span class="n">cluster_borders</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;list&quot;</span><span class="p">:</span> <span class="s2">&quot;geometry&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">cluster_borders</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">cluster_borders</span> <span class="o">=</span> <span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">cluster_borders</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">pois</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">geometry</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">)</span>
+        <span class="n">cluster_borders</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done in </span><span class="si">%0.3f</span><span class="s2">s.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">cluster_borders</span></div>
 </pre></div>
 
            </div>

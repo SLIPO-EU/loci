@@ -242,22 +242,40 @@ by dividing with the number of rows in <cite>gdf</cite> (default: False).</p></l
 <div class="section" id="module-loci.clustering">
 <span id="loci-clustering-module"></span><h2>loci.clustering module<a class="headerlink" href="#module-loci.clustering" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
+<dt id="loci.clustering.cluster_shapes">
+<code class="sig-prename descclassname">loci.clustering.</code><code class="sig-name descname">cluster_shapes</code><span class="sig-paren">(</span><em class="sig-param">pois</em>, <em class="sig-param">shape_type=1</em>, <em class="sig-param">eps_per_cluster=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/clustering.html#cluster_shapes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.clustering.cluster_shapes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes cluster shapes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pois</strong> (<em>GeoDataFrame</em>) – The clustered POIs.</p></li>
+<li><p><strong>shape_type</strong> (<em>integer</em>) – The methods to use for computing cluster shapes (allowed values: 1-3).</p></li>
+<li><p><strong>eps_per_cluster</strong> (<em>DataFrame</em>) – The value of parameter eps used for each cluster (required by methods 2 and 3).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A GeoDataFrame containing the cluster shapes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="loci.clustering.compute_clusters">
-<code class="sig-prename descclassname">loci.clustering.</code><code class="sig-name descname">compute_clusters</code><span class="sig-paren">(</span><em class="sig-param">pois</em>, <em class="sig-param">alg='hdbscan'</em>, <em class="sig-param">min_pts=None</em>, <em class="sig-param">eps=None</em>, <em class="sig-param">cluster_shapes=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/clustering.html#compute_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.clustering.compute_clusters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">loci.clustering.</code><code class="sig-name descname">compute_clusters</code><span class="sig-paren">(</span><em class="sig-param">pois</em>, <em class="sig-param">alg='dbscan'</em>, <em class="sig-param">min_pts=None</em>, <em class="sig-param">eps=None</em>, <em class="sig-param">n_jobs=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/clustering.html#compute_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.clustering.compute_clusters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes clusters using the DBSCAN or the HDBSCAN algorithm.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pois</strong> (<em>GeoDataFrame</em>) – A POI GeoDataFrame.</p></li>
-<li><p><strong>alg</strong> (<em>string</em>) – The clustering algorithm to use (dbscan or hdbscan; default: hdbscan).</p></li>
+<li><p><strong>alg</strong> (<em>string</em>) – The clustering algorithm to use (dbscan or hdbscan; default: dbscan).</p></li>
 <li><p><strong>min_pts</strong> (<em>integer</em>) – The minimum number of neighbors for a dense point.</p></li>
 <li><p><strong>eps</strong> (<em>float</em>) – The neighborhood radius.</p></li>
-<li><p><strong>cluster_shapes</strong> (<em>Boolean</em>) – Whether to return cluster shapes (default: True).</p></li>
+<li><p><strong>n_jobs</strong> (<em>integer</em>) – Number of parallel jobs to run in the algorithm (default: 1)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A GeoDataFrame containing the clustered POIs and their labels, a GeoDataFrame containing the POIs that are
-not part of any cluster, and (optionally) a GeoDataFrame containing the cluster shapes.</p>
+<dd class="field-even"><p>A GeoDataFrame containing the clustered POIs and their labels. The value of parameter <cite>eps</cite> for each cluster
+is also returned (which varies in the case of HDBSCAN).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -360,7 +378,7 @@ and contains the following columns:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>osmwrangle_file</strong> (<em>string</em>) – Path to the input csv file.</p></li>
+<li><p><strong>osmwrangle_file</strong> (<em>string</em>) – Path or URL to the input csv file.</p></li>
 <li><p><strong>target_crs</strong> (<em>string</em>) – Coordinate Reference System of the GeoDataFrame to be created (default: <cite>EPSG:4326</cite>).</p></li>
 <li><p><strong>bound</strong> (<em>polygon</em>) – A polygon to be used as filter.</p></li>
 </ul>
@@ -495,6 +513,50 @@ and contains the following columns:</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A Folium Map object displaying the given clusters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.map_cluster_contents_osm">
+<code class="sig-prename descclassname">loci.plots.</code><code class="sig-name descname">map_cluster_contents_osm</code><span class="sig-paren">(</span><em class="sig-param">cluster_borders</em>, <em class="sig-param">tiles='OpenStreetMap'</em>, <em class="sig-param">width='100%'</em>, <em class="sig-param">height='100%'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_cluster_contents_osm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_cluster_contents_osm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a Folium Map displaying the streets and buildings, retreived from OpenStreetMap via OSMNX, within
+a given AOI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cluster_borders</strong> (<em>GeoDataFrame</em>) – The cluster polygons.</p></li>
+<li><p><strong>tiles</strong> (<em>string</em>) – The tiles to use for the map (default: <cite>OpenStreetMap</cite>).</p></li>
+<li><p><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</p></li>
+<li><p><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Folium Map object displaying the retreived entities.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="loci.plots.map_cluster_diff">
+<code class="sig-prename descclassname">loci.plots.</code><code class="sig-name descname">map_cluster_diff</code><span class="sig-paren">(</span><em class="sig-param">clusters_a</em>, <em class="sig-param">clusters_b</em>, <em class="sig-param">intersection_color='#00ff00'</em>, <em class="sig-param">diff_ab_color='#0000ff'</em>, <em class="sig-param">diff_ba_color='#ff0000'</em>, <em class="sig-param">tiles='OpenStreetMap'</em>, <em class="sig-param">width='100%'</em>, <em class="sig-param">height='100%'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/loci/plots.html#map_cluster_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#loci.plots.map_cluster_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Folium Map displaying the differences between two sets of clusters. Map center and zoom level
+are set automatically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clusters_a</strong> (<em>GeoDataFrame</em>) – The first set of clusters.</p></li>
+<li><p><strong>clusters_b</strong> (<em>GeoDataFrame</em>) – The second set of clusters.</p></li>
+<li><p><strong>intersection_color</strong> (<em>color code</em>) – The color to use for A &amp; B.</p></li>
+<li><p><strong>diff_ab_color</strong> (<em>color code</em>) – The color to use for A - B.</p></li>
+<li><p><strong>diff_ba_color</strong> (<em>color code</em>) – The color to use for B - A.</p></li>
+<li><p><strong>tiles</strong> (<em>string</em>) – The tiles to use for the map (default: <cite>OpenStreetMap</cite>).</p></li>
+<li><p><strong>width</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Width of the map in pixels or percentage (default: 100%).</p></li>
+<li><p><strong>height</strong> (<em>integer</em><em> or </em><em>percentage</em>) – Height of the map in pixels or percentage (default: 100%).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Folium Map object displaying cluster intersections and differences.</p>
 </dd>
 </dl>
 </dd></dl>
